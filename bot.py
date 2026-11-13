@@ -7,6 +7,7 @@ from contextlib import closing
 from pathlib import Path
 
 from onibus.core import coletar_linha, conectar, publicar_linha
+from onibus.refresh import CoordenadorColeta, registrar_coletas
 from onibus.telegram_handlers import build_application
 from scraping import LinhaOnibus
 
@@ -57,6 +58,8 @@ def main() -> None:
     logging.getLogger("httpx").setLevel(logging.WARNING)
     logging.getLogger("httpcore").setLevel(logging.WARNING)
     application = build_application(token, DB_PATH)
+    coordenador = CoordenadorColeta(DB_PATH)
+    registrar_coletas(application, coordenador)
     try:
         application.run_polling(allowed_updates=["message", "inline_query", "callback_query"])
     except Exception:

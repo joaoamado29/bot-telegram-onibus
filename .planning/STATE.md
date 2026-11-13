@@ -2,17 +2,17 @@
 gsd_state_version: "1.0"
 current_phase: 1
 current_phase_name: Primeiras consultas no Telegram
-status: executing
-stopped_at: Plan 01-03 complete; ready to execute Plan 01-04
-last_updated: "2026-11-13T17:36:00.000Z"
+status: complete
+stopped_at: Phase 1 complete; ready for Phase 2 (Calendário de operação e feriados)
+last_updated: "2026-11-13T17:50:00.000Z"
 last_activity: 2026-11-13
-last_activity_desc: Plan 01-03 concluído com 33 testes verdes; iniciando o plano 01-04.
+last_activity_desc: Fase 1 completa: 4 planos concluídos, 44 testes verdes e smoke real aprovado no Telegram.
 progress:
   total_phases: 5
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 4
-  completed_plans: 3
-  percent: 75
+  completed_plans: 4
+  percent: 100
 ---
 
 # Project State
@@ -22,29 +22,29 @@ progress:
 See: .planning/PROJECT.md (updated 2026-11-13)
 
 **Core value:** Permitir consultar os próximos horários do ponto escolhido e receber avisos antes da saída, conforme Brasília e o calendário de operação.
-**Current focus:** Executar o plano 01-04 da fase 1: coleta automática inicial, agendamento semanal e limites de retry.
+**Current focus:** Fase 1 concluída com sucesso; preparar início da Fase 2 (Calendário de operação e feriados).
 
 ## Current Position
 
-Phase: 1 (Primeiras consultas no Telegram) — EXECUTING
-Plan: 3 of 4 in current phase completed (01-01, 01-02, 01-03 done; 01-04 next)
-Status: Plan 01-03 concluído com testes aprovados; executando 01-04
-Last activity: 2026-11-13 — Implementação da busca inline normalizada e paginação.
+Phase: 1 (Primeiras consultas no Telegram) — COMPLETE
+Plan: 4 of 4 in current phase completed (01-01, 01-02, 01-03, 01-04 done)
+Status: Fase 1 100% concluída e verificada com o usuário no Telegram
+Last activity: 2026-11-13 — Smoke test do fluxo completo aprovado no Telegram.
 
-Progress: [███████▒▒▒] 75%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 3
-- Average duration: 28 min
-- Total execution time: 1.4 horas
+- Total plans completed: 4
+- Average duration: 29 min
+- Total execution time: 1.9 horas
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| - | - | - | - |
+| 01-primeiras-consultas-no-telegram | 4 | 1.9h | 29m |
 
 **Recent Trend:**
 - Last 5 plans: Nenhum
