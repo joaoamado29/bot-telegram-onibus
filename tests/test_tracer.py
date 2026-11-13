@@ -4,6 +4,7 @@ import importlib
 import sqlite3
 import tempfile
 import unittest
+from contextlib import closing
 from datetime import datetime
 from pathlib import Path
 from types import SimpleNamespace
@@ -28,7 +29,7 @@ class TracerTests(unittest.IsolatedAsyncioTestCase):
         self.assertIsNotNone(handlers)
         with tempfile.TemporaryDirectory() as directory:
             db = Path(directory) / "test.sqlite3"
-            with core.conectar(db) as conn:
+            with closing(core.conectar(db)) as conn:
                 conn.execute("INSERT INTO linhas VALUES (?, ?, ?, ?)", (123, "Papicu/São João", "tonoponto.com/linha/", "original"))
                 conn.commit()
                 horarios = core.parse_horarios(HTML, 123, "Papicu/São João")
@@ -48,7 +49,7 @@ class TracerTests(unittest.IsolatedAsyncioTestCase):
 
     async def test_constraints_and_invalid_publication(self):
         self.assertIsNotNone(core, "As restrições reais devem estar implementadas")
-        with core.conectar(":memory:") as conn:
+        with closing(core.conectar(":memory:")) as conn:
             conn.execute("INSERT INTO linhas VALUES (123, 'Papicu', 'tonoponto.com/linha/', 'original')")
             conn.commit()
             valid = core.parse_horarios(HTML, 123, "Papicu")
@@ -70,6 +71,31 @@ class TracerTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(markup.inline_keyboard[0][0].switch_inline_query_current_chat, "")
         app = handlers.build_application("123456:development-token", ":memory:")
         self.assertEqual(len(app.handlers[0]), 3)
+
+    async def test_stale_inline_callback_and_time_boundary(self):
+        self.assertIsNotNone(core)
+        with tempfile.TemporaryDirectory() as directory:
+            db = Path(directory) / "boundary.sqlite3"
+            with closing(core.conectar(db)) as conn:
+                conn.execute("INSERT INTO linhas VALUES (123, 'Papicu', 'tonoponto.com/linha/', 'original')")
+                conn.commit()
+                horarios = core.parse_horarios(HTML, 123, "Papicu")
+                core.publicar_linha(conn, horarios)
+                at_noon = datetime(2026, 11, 13, 12, 0, tzinfo=ZoneInfo("America/Sao_Paulo"))
+                self.assertEqual(core.proximas_saidas(conn, 123, 1, at_noon).horarios, ("12:30", "13:00", "14:00"))
+                core.publicar_linha(conn, horarios)
+            callback = SimpleNamespace(data="p:123:1:1", message=None, inline_message_id="inline", answer=AsyncMock(), edit_message_text=AsyncMock())
+            await handlers.ponto_callback(SimpleNamespace(callback_query=callback), SimpleNamespace(bot_data={"db_path": db}))
+            self.assertIn("expirou", callback.edit_message_text.call_args.kwargs["text"])
+
+    async def test_source_url_allowlist(self):
+        self.assertIsNotNone(core)
+        from scraping import LinhaOnibus
+        fetch = unittest.mock.Mock(return_value=HTML)
+        for url in ("https://example.org/", "http://tonoponto.com/linha/", "https://tonoponto.com@example.org/", "https://tonoponto.com:444/"):
+            with self.assertRaises(ValueError):
+                core.coletar_linha(LinhaOnibus(123, "Papicu", url), fetch)
+        fetch.assert_not_called()
 
 
 if __name__ == "__main__":
