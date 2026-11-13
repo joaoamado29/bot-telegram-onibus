@@ -108,6 +108,29 @@ class TelegramHandlersTests(unittest.IsolatedAsyncioTestCase):
         self.assertIn("Terminal A", texto_editado)
         self.assertIn("10:00", texto_editado)
 
+    async def test_callback_em_feriado_mostra_nome_e_data(self) -> None:
+        with closing(conectar(self.db_path)) as conn:
+            conn.execute(
+                """INSERT INTO horarios
+                (numero, nome, calendario, horario_ponto1, horario_ponto2)
+                VALUES (?, ?, ?, ?, ?)""",
+                (11, "Circular Centro", "domingos_feriados", '["08:00", "14:00"]', '["08:30", "14:30"]'),
+            )
+        self.context.bot_data["clock"] = lambda: datetime(2026, 3, 25, 11, 0, tzinfo=BRT)
+        callback = SimpleNamespace(
+            data="p:11:1:1",
+            inline_message_id="msg-inline-feriado",
+            message=None,
+            answer=AsyncMock(),
+            edit_message_text=AsyncMock(),
+        )
+
+        await ponto_callback(SimpleNamespace(callback_query=callback), self.context)
+
+        texto = callback.edit_message_text.call_args.kwargs["text"]
+        self.assertIn("Data Magna do Ceará", texto)
+        self.assertIn("25/03/2026", texto)
+
     async def test_ponto_callback_com_revisao_desatualizada_informa_expiracao(self) -> None:
         """
         O que faz: Clica em um botão que tem revisão antiga (ex: revisão 0 quando o banco está na 1).

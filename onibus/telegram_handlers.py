@@ -108,6 +108,8 @@ def formato_saidas(consulta: ConsultaSaidas) -> str:
     """
     linha_cabecalho = f"{consulta.numero:03d} - {consulta.nome}\n" if consulta.numero and consulta.nome else ""
     cabecalho = f"{linha_cabecalho}{consulta.endereco}\n{consulta.data:%d/%m/%Y} — horário de Brasília"
+    if consulta.feriados:
+        cabecalho += f"\nFeriado(s): {', '.join(consulta.feriados)} ({consulta.data:%d/%m/%Y})"
     if consulta.status == "indisponivel":
         return cabecalho + "\nHorários indisponíveis para este ponto e calendário."
     if consulta.status == "encerrado":

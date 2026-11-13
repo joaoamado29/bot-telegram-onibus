@@ -130,6 +130,25 @@ class SchedulesTemporalTests(unittest.TestCase):
             self.assertEqual(res.horarios, ())
             self.assertEqual(res.status, "indisponivel")
 
+    def test_data_magna_em_dia_util_seleciona_domingo_feriado(self) -> None:
+        with closing(conectar(self.db_path)) as conn:
+            quarta_data_magna = datetime(2026, 3, 25, 11, 0, tzinfo=BRT)
+            res = proximas_saidas(conn, 100, 1, quarta_data_magna)
+
+            self.assertEqual(res.calendario, "domingos_feriados")
+            self.assertEqual(res.horarios, ("14:00",))
+            self.assertEqual(getattr(res, "feriados", ()), ("Data Magna do Ceará",))
+
+    def test_lista_publicada_vazia_e_indisponivel_nao_encerrada(self) -> None:
+        with closing(conectar(self.db_path)) as conn:
+            conn.execute(
+                "UPDATE horarios SET horario_ponto3 = '[]' WHERE numero = ? AND calendario = ?",
+                (100, "uteis"),
+            )
+            res = proximas_saidas(conn, 100, 3, datetime(2026, 11, 13, 15, 0, tzinfo=BRT))
+
+            self.assertEqual(res.status, "indisponivel")
+
     def test_valida_posicao_fechada_ponto(self) -> None:
         """
         O que faz: Passa posição de ponto inválida (ex: 0 ou 6).

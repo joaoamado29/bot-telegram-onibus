@@ -13,6 +13,7 @@ from zoneinfo import ZoneInfo
 import requests
 from bs4 import BeautifulSoup
 
+from onibus.holidays import feriados_em
 from scraping import LinhaOnibus, ensure_schema
 
 BRT = ZoneInfo("America/Sao_Paulo")
@@ -42,6 +43,7 @@ class ConsultaSaidas:
     status: str
     numero: int = 0
     nome: str = ""
+    feriados: tuple[str, ...] = ()
 
 
 def _validar_url(url: str) -> str:
@@ -155,7 +157,9 @@ def conectar(db_path: str | Path) -> sqlite3.Connection:
         ponto1 TEXT NOT NULL, ponto2 TEXT NOT NULL, ponto3 TEXT, ponto4 TEXT, ponto5 TEXT,
         revisao INTEGER NOT NULL, updated_at TEXT NOT NULL
     )""")
+
     checks = []
+    
     for posicao in range(1, 6):
         coluna = f"horario_ponto{posicao}"
         check = f"json_valid({coluna}) AND json_type({coluna}) = 'array'"
@@ -227,12 +231,36 @@ def proximas_saidas(conn: sqlite3.Connection, numero: int, ponto: int, agora: da
     if ponto not in range(1, 6) or agora.tzinfo is None:
         raise ValueError("Ponto ou relógio inválido")
     local = agora.astimezone(BRT)
-    calendario = "uteis" if local.weekday() < 5 else "sabados" if local.weekday() == 5 else "domingos_feriados"
+    feriados = feriados_em(local.date())
+    calendario = (
+        "domingos_feriados"
+        if feriados
+        else "uteis" if local.weekday() < 5 else "sabados" if local.weekday() == 5 else "domingos_feriados"
+    )
+    nomes_feriados = tuple(feriado.nome for feriado in feriados)
     pontos = carregar_pontos(conn, numero)
     endereco = pontos[f"ponto{ponto}"] if pontos else None
     nome_linha = pontos["nome"] if pontos else ""
     row = conn.execute(f"SELECT horario_ponto{ponto} FROM horarios WHERE numero=? AND calendario=?", (numero, calendario)).fetchone()
     if not endereco or row is None or row[0] is None:
-        return ConsultaSaidas(local.date(), calendario, endereco or "", (), "indisponivel", numero=numero, nome=nome_linha)
-    futuros = tuple(valor for valor in sorted(set(json.loads(row[0]))) if datetime.combine(local.date(), time.fromisoformat(valor), tzinfo=BRT) > local)[:3]
-    return ConsultaSaidas(local.date(), calendario, endereco, futuros, "disponivel" if futuros else "encerrado", numero=numero, nome=nome_linha)
+        return ConsultaSaidas(
+            local.date(), calendario, endereco or "", (), "indisponivel",
+            numero=numero, nome=nome_linha, feriados=nomes_feriados,
+        )
+    try:
+        publicados = tuple(sorted(set(json.loads(row[0]))))
+    except (json.JSONDecodeError, TypeError):
+        publicados = ()
+    if not publicados:
+        return ConsultaSaidas(
+            local.date(), calendario, endereco, (), "indisponivel",
+            numero=numero, nome=nome_linha, feriados=nomes_feriados,
+        )
+    futuros = tuple(
+        valor for valor in publicados
+        if datetime.combine(local.date(), time.fromisoformat(valor), tzinfo=BRT) > local
+    )[:3]
+    return ConsultaSaidas(
+        local.date(), calendario, endereco, futuros, "disponivel" if futuros else "encerrado",
+        numero=numero, nome=nome_linha, feriados=nomes_feriados,
+    )
