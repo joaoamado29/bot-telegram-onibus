@@ -69,11 +69,23 @@ def _fetch_page(url: str) -> str:
 
 
 def coletar_linha(linha: LinhaOnibus, fetcher: Callable[[str], str] = _fetch_page) -> HorariosLinha:
+    """
+    O que faz: Baixa a página web de uma linha específica e extrai seus pontos e horários.
+    Por que foi feito assim: Centraliza o download e o parsing, permitindo injetar um buscador
+    simulado durante testes sem depender de rede.
+    """
     url = linha.link if "://" in linha.link else "https://" + linha.link
     return parse_horarios(fetcher(_validar_url(url)), linha.numero, linha.nome)
 
 
 def parse_horarios(html: str, numero: int, nome: str) -> HorariosLinha:
+    """
+    O que faz: Lê o HTML de horários, agrupando horários por ponto e por calendário (dias úteis,
+    sábados e domingos/feriados).
+    Por que foi feito assim: As páginas do Tonoponto organizam horários sob títulos h2 (pontos),
+    subtítulos p.title_p (calendários) e listas ul.listaHorarios. Descartamos itens de publicidade
+    (li.adInList) e normalizamos cada horário no formato estrito HH:MM.
+    """
     soup = BeautifulSoup(html, "html.parser")
     pontos: list[PontoHorario] = []
     endereco: str | None = None
@@ -105,6 +117,11 @@ def parse_horarios(html: str, numero: int, nome: str) -> HorariosLinha:
 
 
 def _validar_horarios(horarios: HorariosLinha) -> None:
+    """
+    O que faz: Valida se a linha possui de 2 a 5 pontos e se os calendários contêm as listas obrigatórias.
+    Por que foi feito assim: Garante a integridade dos dados antes de qualquer escrita no banco,
+    impedindo que coletas incompletas ou corrompidas substituam os dados válidos anteriores.
+    """
     if not 2 <= len(horarios.pontos) <= 5 or not horarios.nome.strip():
         raise ValueError("A linha precisa de dois a cinco pontos")
     calendarios = set().union(*(p.calendarios for p in horarios.pontos))
@@ -122,6 +139,11 @@ def _validar_horarios(horarios: HorariosLinha) -> None:
 
 
 def conectar(db_path: str | Path) -> sqlite3.Connection:
+    """
+    O que faz: Abre conexão com o banco SQLite e garante que as tabelas 'pontos' e 'horarios' existam.
+    Por que foi feito assim: Habilita chaves estrangeiras (PRAGMA foreign_keys = ON) e regras CHECK
+    para garantir que nenhum dado órfão ou JSON inválido seja gravado.
+    """
     conn = sqlite3.connect(str(db_path), timeout=10)
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA foreign_keys = ON")
@@ -148,6 +170,12 @@ def conectar(db_path: str | Path) -> sqlite3.Connection:
 
 
 def publicar_linha(conn: sqlite3.Connection, horarios: HorariosLinha) -> None:
+    """
+    O que faz: Salva ou atualiza todos os pontos e horários de uma linha no banco de forma atômica.
+    Por que foi feito assim: Conforme regra D-08, uma nova publicação substitui os horários antigos
+    e remove calendários que não existem mais. A operação ocorre dentro de uma transação (with conn)
+    para reverter tudo caso ocorra qualquer erro no meio do processo.
+    """
     _validar_horarios(horarios)
     enderecos = [p.endereco for p in horarios.pontos] + [None] * (5 - len(horarios.pontos))
     calendarios = sorted(set().union(*(p.calendarios for p in horarios.pontos)))
@@ -167,6 +195,11 @@ def publicar_linha(conn: sqlite3.Connection, horarios: HorariosLinha) -> None:
 
 
 def buscar_linhas(conn: sqlite3.Connection, termo: str, offset: int, limit: int = 10) -> list[sqlite3.Row]:
+    """
+    O que faz: Busca linhas no banco por número ou nome com suporte a paginação.
+    Por que foi feito assim: Permite responder à busca inline do Telegram de forma rápida
+    e estável, retornando os resultados ordenados pelo número da linha.
+    """
     if not 0 <= offset <= 100000 or not 1 <= limit <= 50:
         raise ValueError("Paginação inválida")
     return conn.execute("""SELECT l.numero,l.nome,l.link,p.revisao FROM linhas l JOIN pontos p ON p.numero=l.numero
@@ -175,10 +208,20 @@ def buscar_linhas(conn: sqlite3.Connection, termo: str, offset: int, limit: int 
 
 
 def carregar_pontos(conn: sqlite3.Connection, numero: int) -> sqlite3.Row | None:
+    """
+    O que faz: Obtém os endereços dos pontos e a revisão atual de uma linha.
+    Por que foi feito assim: Usado na renderização dos botões do Telegram e na validação
+    de que a mensagem inline ainda é compatível com os dados do banco.
+    """
     return conn.execute("SELECT * FROM pontos WHERE numero = ?", (numero,)).fetchone()
 
 
 def proximas_saidas(conn: sqlite3.Connection, numero: int, ponto: int, agora: datetime) -> ConsultaSaidas:
+    """
+    O que faz: Retorna até 3 próximas saídas de hoje para o ponto selecionado no fuso de Brasília.
+    Por que foi feito assim: Regra D-13: compara o horário atual estritamente com os horários de hoje.
+    Se não houver mais saídas hoje, retorna status 'encerrado' sem misturar com saídas de amanhã.
+    """
     if ponto not in range(1, 6) or agora.tzinfo is None:
         raise ValueError("Ponto ou relógio inválido")
     local = agora.astimezone(BRT)

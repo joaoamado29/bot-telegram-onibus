@@ -3,16 +3,16 @@ gsd_state_version: "1.0"
 current_phase: 1
 current_phase_name: Primeiras consultas no Telegram
 status: executing
-stopped_at: Plan 01-01 complete; ready to execute Plan 01-02
-last_updated: "2026-11-13T17:28:00.000Z"
+stopped_at: Plan 01-02 complete; ready to execute Plan 01-03
+last_updated: "2026-11-13T17:33:00.000Z"
 last_activity: 2026-11-13
-last_activity_desc: Smoke test do tracer 01-01 validado no Telegram; avançando para o plano 01-02.
+last_activity_desc: Plan 01-02 concluído com 21 testes verdes; iniciando o plano 01-03.
 progress:
   total_phases: 5
   completed_phases: 0
   total_plans: 4
-  completed_plans: 1
-  percent: 25
+  completed_plans: 2
+  percent: 50
 ---
 
 # Project State
@@ -22,23 +22,23 @@ progress:
 See: .planning/PROJECT.md (updated 2026-11-13)
 
 **Core value:** Permitir consultar os próximos horários do ponto escolhido e receber avisos antes da saída, conforme Brasília e o calendário de operação.
-**Current focus:** Executar o plano 01-02 da fase 1: expandir para cinco pontos e integridade de calendários.
+**Current focus:** Executar o plano 01-03 da fase 1: busca inline com normalização e paginação.
 
 ## Current Position
 
 Phase: 1 (Primeiras consultas no Telegram) — EXECUTING
-Plan: 1 of 4 in current phase completed (01-01 done, 01-02 next)
-Status: Plan 01-01 tracer aprovado e verificado; executando 01-02
-Last activity: 2026-11-13 — Smoke test do tracer 01-01 aprovado pelo usuário no Telegram.
+Plan: 2 of 4 in current phase completed (01-01 done, 01-02 done, 01-03 next)
+Status: Plan 01-02 concluído com testes aprovados; executando 01-03
+Last activity: 2026-11-13 — Validação de 5 pontos, múltiplos calendários e integridade SQLite.
 
-Progress: [██▒▒▒▒▒▒▒▒] 25%
+Progress: [█████▒▒▒▒▒] 50%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 1
-- Average duration: 35 min
-- Total execution time: 0.6 horas
+- Total plans completed: 2
+- Average duration: 30 min
+- Total execution time: 1.0 horas
 
 **By Phase:**
 
