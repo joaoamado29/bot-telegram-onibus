@@ -27,7 +27,16 @@ Este roadmap foi aprovado pelo usuário; nenhum plano de implementação foi exe
 3. Os horários apresentados pertencem ao endereço e ao calendário publicados: uma página com listas de 26 e 27 horários preserva ambas integralmente, sem parear viagens pelo índice nem incorporar anúncios.
 4. O responsável pela coleta consegue consultar, após reabrir o banco, os endereços e listas independentes das cinco posições nas duas tabelas solicitadas; uma relação sem registro correspondente é rejeitada pela chave estrangeira.
 5. Uma coleta com a primeira ou segunda coleção obrigatória vazia não grava um conjunto inválido nem substitui horários por valores inventados.
-**Plans:** TBD
+**Plans:** 0/4 plans executed
+**Wave 1**
+- [ ] 01-01-PLAN.md
+
+**Wave 2** *(blocked on Wave 1 completion)*
+- [ ] 01-02-PLAN.md
+- [ ] 01-03-PLAN.md
+
+**Wave 3** *(blocked on Wave 2 completion)*
+- [ ] 01-04-PLAN.md
 **UI hint:** yes
 
 Escopo incremental: a consulta inicial reconhece os tipos de dia publicados e o dia da semana; a seleção completa por feriados locais pertence à Phase 2. A primeira entrega não promete calendário de feriados nem notificações antes dessas capacidades serem concluídas. Modelo de identidade, formato das coleções e política de rejeição devem ser definidos ao planejar esta fase, respeitando a representação aprovada.
@@ -93,7 +102,7 @@ Definir no planejamento a validação de minutos e a ativação quando o primeir
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Primeiras consultas no Telegram | 0/TBD | Not started | - |
+| 1. Primeiras consultas no Telegram | 0/4 | Planned     | - |
 | 2. Calendário local e consulta completa | 0/TBD | Not started | - |
 | 3. Consulta do dia seguinte | 0/TBD | Not started | - |
 | 4. Alertas da viagem escolhida | 0/TBD | Not started | - |
