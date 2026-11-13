@@ -45,7 +45,12 @@ Permitir que o passageiro encontre os próximos horários do ponto escolhido e r
 - Os seletores `li` e `h2` são indicações do usuário; a estrutura real das páginas deve ser validada antes de definir o parser.
 - Links existentes omitem o esquema; o novo coletor precisará reconstruir URLs válidas com validação do domínio de origem.
 - O banco atual usa inserção sem atualização; a estratégia de atualização dos novos horários deve ser definida no planejamento.
-- Ainda precisam ser definidos: identidade e cardinalidade das novas tabelas, correspondência entre viagens e pontos, fonte de feriados locais, tratamento de horários incompletos e comportamento de alertas após reinício.
+- Cada coluna `horario_pontoN` guarda uma coleção independente de horários por calendário; não alinhar horários de pontos diferentes pelo índice. As coleções dos pontos 1 e 2 são obrigatórias.
+- Considerar feriados nacionais, estaduais do Ceará e municipais de Fortaleza; a fonte verificável do calendário será definida no planejamento.
+- Mostrar uma ou duas saídas quando não houver três disponíveis, sem completar a lista com outro dia.
+- Antecedência livre: para 12 minutos, alertar faltando 12, 7 e 2 minutos e enviar mensagem final na saída.
+- Persistir alertas futuros para recuperar após reinício, pular avisos vencidos e oferecer cancelamento.
+- Ainda precisam ser definidos no planejamento: identidade/cardinalidade das tabelas, fonte verificável de feriados e tratamento de páginas que não atendem à obrigatoriedade das duas primeiras coleções.
 - Exemplo confirmado: saída às 12h e antecedência de 10 minutos gera avisos às 11h50 e 11h55 e mensagem final às 12h.
 
 ## Constraints
@@ -66,6 +71,12 @@ Permitir que o passageiro encontre os próximos horários do ponto escolhido e r
 | Alertas a cada cinco minutos e mensagem final | Acompanhar o tempo restante até a viagem selecionada | Confirmado |
 | Oferecer amanhã quando hoje terminar | Informar ausência de novas saídas sem misturar datas | Confirmado |
 | Duas tabelas relacionadas, com até cinco pontos | Estrutura solicitada pelo usuário | Confirmado; detalhes relacionais pendentes |
+| Coleções independentes por ponto e calendário | Páginas reais possuem quantidades diferentes por ponto | Confirmado |
+| Feriados nacionais, Ceará e Fortaleza | Calendário automático correspondente à operação local | Confirmado |
+| Mostrar menos de três saídas quando necessário | Preservar a data consultada sem inventar horários | Confirmado |
+| Antecedência livre e contagem a cada cinco minutos | Para 12 minutos: avisos em 12, 7, 2 e mensagem final | Confirmado |
+| Recuperar alertas futuros e descartar avisos vencidos | Manter o acompanhamento após reinício sem inundar o usuário | Confirmado |
+| Cancelamento de alertas | Permitir interromper o acompanhamento da viagem | Confirmado |
 
 ## Evolution
 
