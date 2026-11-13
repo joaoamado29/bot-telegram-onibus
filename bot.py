@@ -11,12 +11,33 @@ from onibus.telegram_handlers import build_application
 from scraping import LinhaOnibus
 
 DB_PATH = Path(__file__).resolve().parent / "onibus.sqlite3"
+ENV_PATH = Path(__file__).resolve().parent / ".env"
+
+
+def _carregar_env(caminho: Path) -> None:
+    """
+    O que faz: Lê pares CHAVE=VALOR de um arquivo .env local e define no ambiente.
+    Por que foi feito assim: Permite carregar o token do Telegram de forma segura e local,
+    sem exigir bibliotecas de terceiros e sem expor credenciais no código ou no versionamento.
+    """
+    if not caminho.is_file():
+        return
+    for linha in caminho.read_text(encoding="utf-8").splitlines():
+        linha = linha.strip()
+        if not linha or linha.startswith("#") or "=" not in linha:
+            continue
+        chave, valor = linha.split("=", 1)
+        chave = chave.strip()
+        valor = valor.strip().strip("'\"")
+        if chave and chave not in os.environ:
+            os.environ[chave] = valor
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Consulta de horários ETUFOR no Telegram")
     parser.add_argument("--coletar-linha", type=int, metavar="NUMERO")
     args = parser.parse_args()
+    _carregar_env(ENV_PATH)
     if args.coletar_linha is not None:
         with closing(conectar(DB_PATH)) as conn:
             row = conn.execute("SELECT numero,nome,link FROM linhas WHERE numero=?", (args.coletar_linha,)).fetchone()
