@@ -59,11 +59,35 @@ Nenhum requisito adicional comprometido. Favoritos, recorrência diária e outra
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
+| DATA-01 | Phase 1 | Pending |
+| DATA-02 | Phase 1 | Pending |
+| DATA-03 | Phase 1 | Pending |
+| DATA-04 | Phase 1 | Pending |
+| DATA-05 | Phase 1 | Pending |
+| DATA-06 | Phase 1 | Pending |
+| TIME-01 | Phase 1 | Pending |
+| TIME-02 | Phase 2 | Pending |
+| TIME-03 | Phase 1 | Pending |
+| TIME-04 | Phase 2 | Pending |
+| TIME-05 | Phase 3 | Pending |
+| BOT-01 | Phase 1 | Pending |
+| BOT-02 | Phase 1 | Pending |
+| BOT-03 | Phase 4 | Pending |
+| BOT-04 | Phase 2 | Pending |
+| BOT-05 | Phase 2 | Pending |
+| BOT-06 | Phase 3 | Pending |
+| BOT-07 | Phase 4 | Pending |
+| ALERT-01 | Phase 4 | Pending |
+| ALERT-02 | Phase 4 | Pending |
+| ALERT-03 | Phase 4 | Pending |
+| ALERT-04 | Phase 4 | Pending |
+| ALERT-05 | Phase 5 | Pending |
+| ALERT-06 | Phase 5 | Pending |
 
 **Coverage:**
 - v1 requirements: 24 total
-- Mapped to phases: 0 (roadmap pendente)
-- Unmapped: 24
+- Mapped to phases: 24
+- Unmapped: 0
 
 ## Acceptance Criteria
 
@@ -77,4 +101,4 @@ Nenhum requisito adicional comprometido. Favoritos, recorrência diária e outra
 
 ---
 *Requirements defined: 2026-11-13*
-*Last updated: 2026-11-13 after user approval of all 24 v1 requirements*
+*Last updated: 2026-11-13 after roadmap traceability; all 24 v1 requirements remain user-approved, roadmap awaiting approval*
