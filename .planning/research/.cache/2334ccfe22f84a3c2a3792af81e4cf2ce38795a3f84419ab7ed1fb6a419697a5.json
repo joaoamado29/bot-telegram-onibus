@@ -1,0 +1,1 @@
+{"content":"SQLite official docs require foreign_keys enabled per connection and PRIMARY KEY or UNIQUE parent keys. Python zoneinfo uses system IANA data or tzdata, particularly relevant on Windows.","source":"web","provider":"websearch","confidence":"MEDIUM","fetched_at":"2026-11-13T14:54:37.293Z","ttl":86400000,"kind":"docs"}

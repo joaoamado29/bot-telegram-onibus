@@ -1,0 +1,1 @@
+{"content":"SQLite foreign key enforcement must be enabled per connection. Python zoneinfo uses IANA data and may need tzdata on Windows; timezone rules do not supply local public holiday calendars.","source":"web","provider":"websearch","confidence":"MEDIUM","fetched_at":"2026-11-13T14:59:33.086Z","ttl":86400000,"kind":"web"}

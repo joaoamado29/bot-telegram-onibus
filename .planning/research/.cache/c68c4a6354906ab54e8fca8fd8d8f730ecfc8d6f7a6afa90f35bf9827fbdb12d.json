@@ -1,0 +1,1 @@
+{"content":"PTB 22.8 is async, Python 3.10+, optional job-queue extra installs APScheduler 3.10.4 to below 3.12. PTB persistence does not serialize jobs; persist alert domain state and reconstruct jobs.","source":"web","provider":"websearch","confidence":"MEDIUM","fetched_at":"2026-11-13T14:54:13.022Z","ttl":86400000,"kind":"docs"}
