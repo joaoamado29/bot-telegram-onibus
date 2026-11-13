@@ -101,11 +101,13 @@ async def inline_query(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
 
 def formato_saidas(consulta: ConsultaSaidas) -> str:
     """
-    O que faz: Formata a resposta com a data e as próximas saídas no padrão de Brasília.
-    Por que foi feito assim: Apresenta o resultado de forma limpa e direta ao passageiro,
-    informando claramente se as viagens de hoje já encerraram ou se não há operação no dia.
+    O que faz: Formata a resposta com o número e nome da linha na primeira linha do cabeçalho,
+    seguido do endereço do ponto, data e as próximas saídas no padrão de Brasília.
+    Por que foi feito assim: Atende à solicitação de identificar com destaque a linha consultada
+    no topo da mensagem antes dos horários.
     """
-    cabecalho = f"{consulta.endereco}\n{consulta.data:%d/%m/%Y} — horário de Brasília"
+    linha_cabecalho = f"{consulta.numero:03d} - {consulta.nome}\n" if consulta.numero and consulta.nome else ""
+    cabecalho = f"{linha_cabecalho}{consulta.endereco}\n{consulta.data:%d/%m/%Y} — horário de Brasília"
     if consulta.status == "indisponivel":
         return cabecalho + "\nHorários indisponíveis para este ponto e calendário."
     if consulta.status == "encerrado":

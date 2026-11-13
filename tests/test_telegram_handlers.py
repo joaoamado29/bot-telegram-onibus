@@ -103,6 +103,8 @@ class TelegramHandlersTests(unittest.IsolatedAsyncioTestCase):
         callback.answer.assert_awaited_once()
         callback.edit_message_text.assert_awaited_once()
         texto_editado = callback.edit_message_text.call_args.kwargs["text"]
+        linhas_texto = texto_editado.splitlines()
+        self.assertEqual(linhas_texto[0], "011 - Circular Centro")
         self.assertIn("Terminal A", texto_editado)
         self.assertIn("10:00", texto_editado)
 
