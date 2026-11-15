@@ -1,9 +1,9 @@
 ---
-status: partial
+status: complete
 phase: 02-calend-rio-local-e-consulta-completa
 source: [02-VERIFICATION.md]
 started: 2026-11-15
-updated: 2026-11-15T16:57:37.885Z
+updated: 2026-11-15T17:30:06.934Z
 ---
 
 ## Current Test
@@ -21,9 +21,8 @@ clarification: "Usuário confirmou: a linha 004 está correta, realmente ele rod
 
 ### 2. Navegar entre páginas no Telegram
 expected: Em uma lista com várias páginas, Próxima e Anterior funcionam, os horários permanecem legíveis e Voltar está disponível em todas as páginas. Se os dados reais não gerarem várias páginas, registrar a limitação antes de considerar este item aprovado.
-result: blocked
-blocked_by: prior-phase
-reason: "Usuário: Não. Porém aparece um principio de paginação (\"Página 1/1\"). As listas observadas couberam em uma página; navegação Próxima/Anterior não exercitada. Não é uma falha comprovada de paginação."
+result: pass
+reported: "Sim"
 
 ### 3. Buscar outra linha após a correção
 expected: Buscar outra linha abre a busca inline no chat atual na lista de pontos, próximas saídas e Ver horários; permite escolher outra linha sem /start, preservando Voltar aos pontos.
@@ -33,11 +32,11 @@ reported: "Perfeito, funcionou"
 ## Summary
 
 total: 3
-passed: 1
+passed: 2
 issues: 1
 pending: 0
 skipped: 0
-blocked: 1
+blocked: 0
 
 ## Gaps
 
@@ -58,7 +57,7 @@ blocked: 1
 
 ## Observações confirmadas
 
-- Linha 051 — Grande Circular I coletada a pedido do usuário em 2026-11-15: quatro pontos e três calendários. Quantidades por ponto: domingos/feriados 66/67/68/67; sábados 87/85/85/86; úteis 70/71/73/72. Verificação local do formatador para hoje gerou uma página por ponto, com 632 a 642 caracteres; não constitui aprovação humana de navegação multipágina. Nenhum horário foi fabricado e o limite de página não foi alterado.
+- Linha 051 — Grande Circular I coletada a pedido do usuário em 2026-11-15: quatro pontos e três calendários. Quantidades por ponto: domingos/feriados 66/67/68/67; sábados 87/85/85/86; úteis 70/71/73/72. Após limitar cada página a 28 horários, o usuário confirmou no Telegram que a navegação multipágina funciona. Nenhum horário foi fabricado.
 
 - G-02-1 retirado das falhas após esclarecimento do usuário: a linha 004 opera somente em dias úteis. A indisponibilidade em domingo/feriado é correta. Não houve correção do banco ou do coletor.
 - A apresentação de mensagens e do rótulo Página 1/1 será discutida na fase 6, adicionada a pedido do usuário.
