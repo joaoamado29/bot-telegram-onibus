@@ -3,11 +3,56 @@ from __future__ import annotations
 import tempfile
 import unittest
 from contextlib import closing
-from datetime import datetime
+from datetime import date, datetime
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
 from onibus.core import BRT, HorariosLinha, PontoHorario, conectar, proximas_saidas, publicar_linha
+from onibus.holidays import feriados_em
+
+
+class HolidaysCatalogTests(unittest.TestCase):
+    def test_feriados_fixos_nacionais_estaduais_e_municipais(self) -> None:
+        casos = (
+            (date(2026, 1, 1), "Confraternização Universal", "Brasil"),
+            (date(2026, 4, 21), "Tiradentes", "Brasil"),
+            (date(2026, 5, 1), "Dia do Trabalho", "Brasil"),
+            (date(2026, 9, 7), "Independência do Brasil", "Brasil"),
+            (date(2026, 10, 12), "Nossa Senhora Aparecida", "Brasil"),
+            (date(2026, 11, 2), "Finados", "Brasil"),
+            (date(2026, 11, 15), "Proclamação da República", "Brasil"),
+            (date(2026, 11, 20), "Dia Nacional de Zumbi e da Consciência Negra", "Brasil"),
+            (date(2026, 12, 25), "Natal", "Brasil"),
+            (date(2026, 3, 25), "Data Magna do Ceará", "Ceará"),
+            (date(2026, 3, 19), "Dia de São José", "Fortaleza"),
+            (date(2026, 8, 15), "Nossa Senhora da Assunção", "Fortaleza"),
+        )
+        for data, nome, jurisdicao in casos:
+            with self.subTest(data=data, nome=nome):
+                encontrados = feriados_em(data)
+                por_nome = {item.nome: item for item in encontrados}
+                self.assertIn(nome, por_nome)
+                if nome in por_nome:
+                    self.assertEqual(por_nome[nome].jurisdicao, jurisdicao)
+                    self.assertTrue(por_nome[nome].fonte.startswith("https://"))
+
+    def test_feriados_moveis_calculados_offline(self) -> None:
+        self.assertIn("Sexta-feira da Paixão", [item.nome for item in feriados_em(date(2025, 4, 18))])
+        self.assertIn("Corpus Christi", [item.nome for item in feriados_em(date(2025, 6, 19))])
+
+    def test_feriados_coincidentes_preservam_todos_os_nomes(self) -> None:
+        nomes = [item.nome for item in feriados_em(date(2079, 4, 21))]
+        self.assertEqual(nomes, ["Tiradentes", "Sexta-feira da Paixão"])
+
+    def test_feriado_excepcional_de_2026_nao_se_repete(self) -> None:
+        feriado_2026 = feriados_em(date(2026, 4, 13))
+        self.assertEqual(len(feriado_2026), 1)
+        self.assertEqual(feriado_2026[0].nome, "Aniversário da Cidade de Fortaleza")
+        self.assertEqual(feriado_2026[0].ano, 2026)
+        self.assertEqual(feriados_em(date(2027, 4, 13)), ())
+
+    def test_ponto_facultativo_nao_e_feriado(self) -> None:
+        self.assertEqual(feriados_em(date(2026, 2, 16)), ())
 
 
 class SchedulesTemporalTests(unittest.TestCase):
@@ -138,6 +183,15 @@ class SchedulesTemporalTests(unittest.TestCase):
             self.assertEqual(res.calendario, "domingos_feriados")
             self.assertEqual(res.horarios, ("14:00",))
             self.assertEqual(getattr(res, "feriados", ()), ("Data Magna do Ceará",))
+
+    def test_feriado_em_sabado_prevalece_sobre_calendario_de_sabados(self) -> None:
+        with closing(conectar(self.db_path)) as conn:
+            sabado_feriado = datetime(2026, 8, 15, 9, 0, tzinfo=BRT)
+            res = proximas_saidas(conn, 100, 1, sabado_feriado)
+
+            self.assertEqual(res.calendario, "domingos_feriados")
+            self.assertEqual(res.horarios, ("14:00",))
+            self.assertEqual(res.feriados, ("Nossa Senhora da Assunção",))
 
     def test_lista_publicada_vazia_e_indisponivel_nao_encerrada(self) -> None:
         with closing(conectar(self.db_path)) as conn:
