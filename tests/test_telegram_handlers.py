@@ -96,12 +96,14 @@ class TelegramHandlersTests(unittest.IsolatedAsyncioTestCase):
         self.assertIn("Ver horários", [b.text for b in botoes])
         data = next(b.callback_data for b in botoes if b.text == "Ver horários")
         encontrados = []
-        while True:
+        for _ in range((len(valores) + 27) // 28):
             pagina = await self._clique(data)
             resposta = pagina.edit_message_text.call_args.kwargs
             self.assertLessEqual(len(resposta["text"]), 4096)
             self.assertIn("Terminal A", resposta["text"])
-            encontrados.extend(re.findall(r"\b\d{2}:\d{2}\b", resposta["text"]))
+            horarios_pagina = re.findall(r"\b\d{2}:\d{2}\b", resposta["text"])
+            self.assertLessEqual(len(horarios_pagina), 28)
+            encontrados.extend(horarios_pagina)
             botoes = [b for row in resposta["reply_markup"].inline_keyboard for b in row]
             self._assert_buscar_outra_linha(resposta["reply_markup"])
             self.assertIn("Voltar", [botao.text for botao in botoes])
