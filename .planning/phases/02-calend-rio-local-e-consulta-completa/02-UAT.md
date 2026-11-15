@@ -58,5 +58,7 @@ blocked: 1
 
 ## Observações confirmadas
 
+- Linha 051 — Grande Circular I coletada a pedido do usuário em 2026-11-15: quatro pontos e três calendários. Quantidades por ponto: domingos/feriados 66/67/68/67; sábados 87/85/85/86; úteis 70/71/73/72. Verificação local do formatador para hoje gerou uma página por ponto, com 632 a 642 caracteres; não constitui aprovação humana de navegação multipágina. Nenhum horário foi fabricado e o limite de página não foi alterado.
+
 - G-02-1 retirado das falhas após esclarecimento do usuário: a linha 004 opera somente em dias úteis. A indisponibilidade em domingo/feriado é correta. Não houve correção do banco ou do coletor.
 - A apresentação de mensagens e do rótulo Página 1/1 será discutida na fase 6, adicionada a pedido do usuário.
