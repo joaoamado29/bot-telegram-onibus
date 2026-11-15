@@ -19,7 +19,7 @@ Auditoria independente dos requisitos TIME-02, TIME-04, BOT-04 e BOT-05. Os test
 | Configuração | Descoberta padrão de unittest em tests/; bancos SQLite temporários |
 | Comando rápido | `.venv/Scripts/python.exe -m unittest discover -s tests -p test_telegram_handlers.py -v` |
 | Suíte completa | `.venv/Scripts/python.exe -m unittest discover -s tests -p 'test_*.py' -v` |
-| Resultado auditado | 64 testes aprovados em 3.041s; exit code 0 |
+| Resultado auditado | 65 testes aprovados em 3.539s; exit code 0 (2026-11-15) |
 | Relógio e rede | Datas fixas; callbacks simulados; sem Telegram ou rede para os testes |
 
 ## Sampling Rate
@@ -69,4 +69,12 @@ Não há lacuna automatizável nos quatro requisitos. O smoke visual no Telegram
 - [x] Latência medida inferior a 5 segundos nesta execução.
 - [x] `nyquist_compliant: true` corresponde à cobertura comportamental executada.
 
-**Aprovação automatizada:** 2026-11-15 — auditoria Nyquist, 64/64 testes. Commits e conclusão do plano 02-02 permanecem sob responsabilidade do orquestrador; conformidade de cobertura não implica alegação de sequência TDD integral.
+**Aprovação automatizada:** 2026-11-15 — auditoria Nyquist atualizada, 65/65 testes. Commits e conclusão do plano 02-02 permanecem sob responsabilidade do orquestrador; conformidade de cobertura não implica alegação de sequência TDD integral.
+
+## Validation Audit 2026-11-15
+
+| Metric | Count |
+|---|---|
+| Gaps found | 0 |
+| Resolved | 0 |
+| Escalated | 0 |
