@@ -23,13 +23,13 @@ progress:
 See: .planning/PROJECT.md (updated 2026-11-13)
 
 **Core value:** Permitir consultar os próximos horários do ponto escolhido e receber avisos antes da saída, conforme Brasília e o calendário de operação.
-**Current focus:** Fase 02 — correção Buscar outra linha implementada; validar no Telegram.
+**Current focus:** Fase 02 — Buscar outra linha aprovado no Telegram; UAT multipágina ainda não exercitado.
 
 ## Current Position
 
 Phase: 02 (Calendário local e consulta completa) — AWAITING UAT
 Plan: 3 of 3 concluídos
-Status: human_needed — Buscar outra linha pronto para reteste
+Status: human_needed — busca de linha aprovada; somente paginação real pendente
 Last activity: 2026-11-15 — 65 testes verdes, revisão sem novos achados, commit 4a9fda2.
 
 Progress: [██░░░░░░░░] 17%
@@ -73,7 +73,7 @@ Nenhum item adicional capturado.
 
 ### Blockers/Concerns
 
-- Phase 2: reteste Buscar outra linha pendente; paginação real bloqueada pela ausência de listas com várias páginas no UAT. Não avançar antes da validação.
+- Phase 2: Buscar outra linha aprovado pelo usuário. Paginação real bloqueada pela ausência de listas com várias páginas no UAT; não declarar aprovação desse item.
 - Catálogo de feriados exige revisão anual das fontes oficiais.
 - Phase 4: definir validação da antecedência e ativação tardia; hospedagem/disponibilidade do processo influenciam entrega dos avisos.
 

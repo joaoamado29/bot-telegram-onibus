@@ -1,20 +1,14 @@
 ---
-status: testing
+status: partial
 phase: 02-calend-rio-local-e-consulta-completa
 source: [02-VERIFICATION.md]
 started: 2026-11-15
-updated: 2026-11-15
+updated: 2026-11-15T16:57:37.885Z
 ---
 
 ## Current Test
 
-number: 3
-name: Buscar outra linha após a correção
-expected: |
-  Escolha uma linha e um ponto. Toque em Buscar outra linha.
-  A busca inline deve abrir no chat atual e permitir escolher outra linha sem /start.
-  Confira também o botão na lista de pontos e em Ver horários; Voltar mantém a linha atual.
-awaiting: user response
+[testing complete]
 
 ## Tests
 
@@ -33,14 +27,15 @@ reason: "Usuário: Não. Porém aparece um principio de paginação (\"Página 1
 
 ### 3. Buscar outra linha após a correção
 expected: Buscar outra linha abre a busca inline no chat atual na lista de pontos, próximas saídas e Ver horários; permite escolher outra linha sem /start, preservando Voltar aos pontos.
-result: [pending]
+result: pass
+reported: "Perfeito, funcionou"
 
 ## Summary
 
 total: 3
-passed: 0
+passed: 1
 issues: 1
-pending: 1
+pending: 0
 skipped: 0
 blocked: 1
 
