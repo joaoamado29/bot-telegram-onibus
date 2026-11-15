@@ -96,6 +96,23 @@ O banco de dados relacional é mantido em `onibus.sqlite3` com integridade refer
 
 ---
 
+## Calendário de operação e feriados
+
+As consultas usam `America/Sao_Paulo`. Em qualquer feriado cadastrado, inclusive quando cai em sábado ou domingo, o bot seleciona o calendário `domingos_feriados` e informa o nome e a data do feriado. O catálogo é local e a consulta do passageiro não acessa a internet. Pontos facultativos, como Carnaval, não são tratados como feriados.
+
+O catálogo em `onibus/holidays.py` registra as normas que definem cada regra:
+
+- Feriados nacionais recorrentes: [Lei 662/1949 e alterações](https://legislacao.presidencia.gov.br/atos/?ano=1949&ato=3deoXUE5EMBRVT165&numero=662&tipo=LEI), [Lei 6.802/1980](https://www.planalto.gov.br/ccivil_03/leis/l6802.htm) (12 de outubro) e [Lei 14.759/2023](https://legislacao.presidencia.gov.br/atos/?ano=2023&ato=264k3ZE90MZpWTeac&numero=14759&tipo=LEI) (20 de novembro).
+- Data Magna do Ceará: [Emenda Constitucional estadual 73/2011](https://www2.al.ce.gov.br/legislativo/tramit2011/ec73.htm), em 25 de março.
+- Feriados religiosos de Fortaleza: [Lei municipal 8.796/2003](https://legislacao.pgm.fortaleza.ce.gov.br/images/6/6d/Lei8796-03.pdf), com São José, Nossa Senhora da Assunção, Sexta-feira da Paixão e Corpus Christi. As duas datas móveis são calculadas localmente a partir da Páscoa.
+- Exceção de 2026: [Lei municipal 11.649/2026](https://sapl.fortaleza.ce.leg.br/norma/14390), que declarou feriado em 13 de abril somente naquele ano pelo tricentenário da cidade.
+
+Revise o catálogo anualmente, antes do início de cada ano civil, consultando a legislação federal, estadual e o [sistema de normas da Câmara Municipal de Fortaleza](https://sapl.fortaleza.ce.leg.br/norma/pesquisar). Registre novas regras recorrentes ou exceções apenas quando houver lei que as declare; não transforme ponto facultativo nem feriado de ano específico em regra recorrente.
+
+O responsável pela manutenção do bot deve fazer essa revisão e versionar as mudanças antes de disponibilizar o novo calendário. A revisão de 15/11/2026 conferiu as normas municipais e o [calendário oficial do TRE-CE](https://www.tre-ce.jus.br/legislacao/compilada/portaria-conjunta/2026/portaria-conjunta-no-3-de-9-de-abril-de-2026), usando somente os feriados civis/religiosos aplicáveis ao município; recessos e feriados específicos do Judiciário não integram a operação do bot. A exceção municipal encontrada foi a de 13/04/2026, mantida separada das regras recorrentes.
+
+---
+
 ## 🧪 Execução dos Testes Automatizados
 
 Para rodar toda a suíte de testes unitários e de integração:

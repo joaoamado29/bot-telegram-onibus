@@ -54,6 +54,12 @@ class HolidaysCatalogTests(unittest.TestCase):
     def test_ponto_facultativo_nao_e_feriado(self) -> None:
         self.assertEqual(feriados_em(date(2026, 2, 16)), ())
 
+    def test_mudanca_de_ano_e_novas_datas_moveis(self) -> None:
+        self.assertEqual(feriados_em(date(2026, 12, 31)), ())
+        self.assertEqual(feriados_em(date(2027, 1, 1))[0].nome, "Confraternização Universal")
+        self.assertIn("Sexta-feira da Paixão", [f.nome for f in feriados_em(date(2026, 4, 3))])
+        self.assertIn("Corpus Christi", [f.nome for f in feriados_em(date(2026, 6, 4))])
+
 
 class SchedulesTemporalTests(unittest.TestCase):
     """
