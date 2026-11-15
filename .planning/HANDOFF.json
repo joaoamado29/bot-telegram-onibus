@@ -1,0 +1,90 @@
+{
+  "version": "1.0",
+  "timestamp": "2026-11-15T18:08:08.258Z",
+  "phase": "02",
+  "phase_name": "Calendário local e consulta completa",
+  "phase_dir": ".planning/phases/02-calend-rio-local-e-consulta-completa",
+  "plan": 3,
+  "task": 1,
+  "total_tasks": 1,
+  "status": "paused",
+  "completed_tasks": [
+    {
+      "id": 1,
+      "name": "Implementar limite de 28 horários por página",
+      "status": "done",
+      "commit": "be28212"
+    },
+    {
+      "id": 2,
+      "name": "Confirmar navegação multipágina da linha 051 no Telegram",
+      "status": "done",
+      "commit": "d7c1677"
+    },
+    {
+      "id": 3,
+      "name": "Revisar e validar paginação e artefatos da Fase 2",
+      "status": "done",
+      "commit": "f68a7ad"
+    }
+  ],
+  "remaining_tasks": [
+    {
+      "id": 4,
+      "name": "Ajustar a meta MVP da Fase 2 e regenerar a verificação técnica",
+      "status": "not_started"
+    }
+  ],
+  "blockers": [
+    {
+      "description": "O usuário pausou antes de responder à pergunta do gsd-mvp-phase: re-prompt da história de usuário ou abortar. A verificação técnica permanece stale até que uma meta válida seja registrada e a verificação seja refeita.",
+      "type": "human_action",
+      "workaround": "Retomar com $gsd-mvp-phase 2 --force; responder à escolha pendente; se re-prompt, completar as três partes da história, atender SPIDR se disparado e confirmar a edição do ROADMAP; depois executar $gsd-verify-work 2."
+    }
+  ],
+  "async_jobs": [],
+  "human_actions_pending": [
+    {
+      "action": "Escolher re-prompt da história de usuário ou cancelar o gsd-mvp-phase.",
+      "context": "A Fase 2 já está em modo MVP, mas o goal atual não passa o validador de história de usuário. O usuário invocou --force, mas interrompeu antes dessa escolha.",
+      "blocking": true
+    }
+  ],
+  "decisions": [
+    {
+      "decision": "Limitar cada página de horários a 28 entradas.",
+      "rationale": "Permite que a linha 051 gere páginas reais para navegação e mantém o teste de 1440 horários abrangente.",
+      "phase": "02"
+    },
+    {
+      "decision": "Preservar as alterações locais existentes em bot.py e onibus/refresh.py.",
+      "rationale": "São alterações do usuário fora do escopo desta verificação.",
+      "phase": "02"
+    }
+  ],
+  "uncommitted_files": [
+    " M .planning/phases/02-calend-rio-local-e-consulta-completa/.continue-here.md",
+    " M bot.py",
+    " M onibus/refresh.py",
+    "?? .agents/",
+    "?? .codex/",
+    "?? .planning/codebase/",
+    "?? .planning/milestone.lock",
+    "?? .planning/phases/02-calend-rio-local-e-consulta-completa/02-01-catalog-red-evidence.json",
+    "?? .planning/phases/02-calend-rio-local-e-consulta-completa/02-01-catalog-red-output.txt",
+    "?? .planning/phases/02-calend-rio-local-e-consulta-completa/02-01-red-evidence.json",
+    "?? .planning/phases/02-calend-rio-local-e-consulta-completa/02-01-red-output.txt",
+    "?? .planning/phases/02-calend-rio-local-e-consulta-completa/02-PATTERNS.md",
+    "?? .planning/phases/02-calend-rio-local-e-consulta-completa/02-RESEARCH.md",
+    "?? .planning/phases/06-melhorar-clareza-das-respostas-do-bot/",
+    "?? .planning/research/.cache/04bac2c4b653b91d1e74afc3b3d1a3a25cf335690c8ec118f207dc0ea8f8886a.json",
+    "?? .planning/research/.cache/39dfc3cf4c10c56bd762684cf5465bb7b902b9842df168a1e22259ee4018040b.json",
+    "?? .planning/research/.cache/98722cbc42f4f5c926b13c6552ec2fa64dc811cc4aa23f344ccdc709aec229ac.json",
+    "?? .planning/research/.cache/ae86e71a33e2f7d96b0186be76fff33ca754c8bc82469b6d6bcecf25dc0761ac.json",
+    "?? .planning/research/.cache/ba8631600a39a8db462b5444ac620b6dca4cd68cadedb2194d91bcbf80e05343.json",
+    "?? .planning/state.json",
+    "?? tempCodeRunnerFile.py"
+  ],
+  "next_action": "Retomar o fluxo MVP na escolha pendente e, após aprovação e atualização da meta, executar $gsd-verify-work 2 para regerar o relatório técnico.",
+  "context_notes": "O UAT está completo: testes 2 e 3 passaram no Telegram; o test 1 é uma issue histórica reconciliada pelo plano gap-closure 02-03. A suíte completa tem 65 testes aprovados. O relatório 02-VERIFICATION.md continua stale porque onibus/telegram_handlers.py e tests/test_telegram_handlers.py mudaram. A linha 004 opera corretamente apenas em dias úteis. O usuário pediu pausa antes de escolher re-prompt ou abortar no gsd-mvp-phase 2 --force."
+}
