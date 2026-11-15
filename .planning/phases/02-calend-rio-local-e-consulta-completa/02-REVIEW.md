@@ -1,25 +1,50 @@
 ﻿---
 phase: 02-calend-rio-local-e-consulta-completa
-reviewed: "2026-11-15T17:35:50Z"
+reviewed: "2026-11-15"
 depth: standard
-files_reviewed: 2
+files_reviewed: 6
 files_reviewed_list:
+  - onibus/holidays.py
+  - onibus/core.py
   - onibus/telegram_handlers.py
+  - tests/test_schedules.py
   - tests/test_telegram_handlers.py
+  - README.md
 incremental_plan: "02-03"
 historical_scope: "A revisÃ£o inicial cobriu holidays.py, core.py, telegram_handlers.py, test_schedules.py, test_telegram_handlers.py e README.md; achados resolvidos preservados abaixo."
 findings:
   critical: 0
-  warning: 0
+  warning: 1
   info: 0
-  total: 0
+  total: 1
   necessity: 0
 resolved_findings: [CR-01, WR-01, WR-02, WR-03, WR-04]
 resolved_count: 5
-status: clean
+status: issues_found
 ---
 
 # Fase 02: revisÃ£o de cÃ³digo
+
+## Revisão técnica atual — 15/11/2026
+
+Revisão standard dos seis arquivos listados no frontmatter, com leitura dos planos, resumos e decisões. Nenhum novo defeito funcional comprovado nas alterações de calendário, consulta integral, paginação ou retorno. Um WARNING documental permanece no roadmap do README. As seções históricas abaixo descrevem rodadas anteriores e seus achados resolvidos.
+
+O catálogo local separa regras recorrentes e exceção anual; `proximas_saidas` converte o instante para Brasília antes de resolver feriados, usa coluna de ponto validada e parâmetros SQL vinculados. Ausência de calendário/lista continua distinta de encerramento de uma lista válida. A lista integral vem do SQLite e não do filtro das três próximas saídas.
+
+`_consultar` inicia `BEGIN` antes da leitura de revisão/pontos; o resultado preserva o snapshot até fechar a conexão. Callbacks passam por fullmatch e validam data/página. A paginação reserva o espaço do cabeçalho e rótulo efetivo, mantém até 28 entradas por página e conserva os valores. Voltar recompõe endereços da mesma linha; Buscar outra linha reutiliza a busca inline sem callback novo nem estado de passageiro compartilhado.
+
+Foram lidos os testes de datas fixas, mudança de dia, lista de 1.440 valores, navegação entre pontos, callbacks inválidos e publicação concorrente. O teste de paginação exige no máximo 28 horários, limita a travessia e compara a sequência completa. Os cinco achados históricos listados em `resolved_findings` continuam corrigidos pelas implementações e asserções atuais. Nenhum achado de necessidade demonstrável foi encontrado; guardas de callbacks/SQLite protegem fronteiras de confiança reais.
+
+Esta revisão não executou testes, serviços nem requisições externas. A execução de 65 testes aprovada em 3.675s pertence ao verificador desta rodada; a aprovação real do Telegram está registrada no UAT e não é reivindicada como observação deste revisor.
+
+### WR-05: Roadmap do README diverge da organização aprovada
+
+**Classification:** WARNING
+**File:** `README.md:128-132`
+**Issue:** O roadmap público ainda marca a Fase 1 como atual, coloca a navegação de todos os horários na Fase 3 e descreve a Fase 5 como monitoramento e logs. A lista integral e o retorno já pertencem à Fase 2 (`02-02-PLAN.md` e implementação em `telegram_handlers.py`); `.planning/ROADMAP.md` reserva a Fase 3 à consulta do dia seguinte e a Fase 5 à continuidade e ao cancelamento de alertas. As duas descrições orientam manutenção e expectativas para escopos diferentes.
+**Fix:** Atualizar apenas o trecho de roadmap do README para refletir a organização aprovada: Fase 2 com calendário, lista integral e navegação; Fase 3 com consulta de amanhã; Fase 5 com recuperação após reinício e cancelamento. Remover a indicação fixa de Fase 1 atual ou vinculá-la ao estado real. Não ampliar o escopo de implementação para satisfazer a descrição desatualizada.
+
+---
 
 ## Summary
 

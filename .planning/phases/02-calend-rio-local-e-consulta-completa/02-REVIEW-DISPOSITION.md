@@ -2,17 +2,18 @@
 phase: "02"
 review: 02-REVIEW.md
 open: 0
-total: 5
+total: 6
 ---
 
-# Fase 02 ? Resolu??o da revis?o
+# Fase 02 — Disposição da revisão
 
-| Finding | Severity | Disposition | Source |
+| Finding | Severity | Disposition | Evidence |
 |---|---|---|---|
-| CR-01 | critical | fixed | Snapshot SQLite antes da valida??o; regress?o concorrente WAL aprovada e reavalia??o independente |
-| WR-01 | warning | fixed | Datas e p?ginas inv?lidas recebem alerta expl?cito ?nico; testes aprovados |
-| WR-02 | warning | fixed | Or?amento real de mensagem; cabe?alho longo v?lido aceito e excesso explicado; testes aprovados |
-| WR-03 | warning | fixed | Teste agora afirma limite de 28 hor?rios por p?gina |
-| WR-04 | warning | fixed | Teste limita itera??es ao n?mero esperado de p?ginas e confere a lista completa |
+| CR-01 | critical | fixed | Snapshot BEGIN antes da validação; teste concorrente WAL aprovado |
+| WR-01 | warning | fixed | Datas/páginas inválidas recebem alerta explícito; testes aprovados |
+| WR-02 | warning | fixed | Orçamento real da mensagem; cabeçalho longo aceito/excesso explicado |
+| WR-03 | warning | fixed | Teste afirma limite de 28 horários por página |
+| WR-04 | warning | fixed | Percurso limitado e comparação integral dos 1440 valores |
+| WR-05 | warning | deferred | Deriva do roadmap no README; advisory documental fora do escopo funcional, conforme decisão do orquestrador nesta rodada |
 
-Revis?o final clean; cinco achados resolvidos e nenhum achado aberto.
+Nenhum achado funcional aberto. WR-05 permanece documentado, sem alegar correção: a organização aprovada é a de `.planning/ROADMAP.md`. README não foi alterado. A revisão de seis arquivos encontrou zero novos defeitos funcionais comprovados e uma advertência documental.

@@ -19,7 +19,7 @@ Auditoria independente dos requisitos TIME-02, TIME-04, BOT-04 e BOT-05. Os test
 | Configuração | Descoberta padrão de unittest em tests/; bancos SQLite temporários |
 | Comando rápido | `.venv/Scripts/python.exe -m unittest discover -s tests -p test_telegram_handlers.py -v` |
 | Suíte completa | `.venv/Scripts/python.exe -m unittest discover -s tests -p 'test_*.py' -v` |
-| Resultado auditado | 65 testes aprovados em 3.539s; exit code 0 (2026-11-15) |
+| Resultado auditado | 65 testes aprovados em 3.675s; exit code 0 (2026-11-15, reverificação da meta MVP) |
 | Relógio e rede | Datas fixas; callbacks simulados; sem Telegram ou rede para os testes |
 
 ## Sampling Rate
@@ -56,7 +56,7 @@ A infraestrutura existente cobre todos os requisitos da fase. Nenhuma dependênc
 
 ## Manual-Only Verifications
 
-Auditoria incremental 02-03: 65 testes verdes (3.215s); revisão independente confirmou 17 handlers verdes e cobertura do botão na escolha de pontos, consultas, retorno e páginas de 1440 horários. Nenhuma lacuna automatizável adicional encontrada. Abertura real da busca inline pelo botão continua pendente de UAT.
+Reverificação da meta MVP: 65 testes verdes (3.675s), incluindo 17 testes de handlers e comparação integral de 1440 horários com até 28 por página. Nenhuma lacuna automatizável encontrada. Abertura real da busca e navegação multipágina foram aprovadas pelo usuário em `02-UAT.md`; a issue histórica do teste 1 está resolvida pelo plano 02-03 executado.
 
 Não há lacuna automatizável nos quatro requisitos. O smoke visual no Telegram real continua recomendado para conferir renderização e usabilidade dos botões; esta auditoria usa mocks da API e não afirma ter executado esse smoke.
 

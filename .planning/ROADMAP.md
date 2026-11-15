@@ -43,7 +43,7 @@ Este roadmap foi aprovado pelo usuário; nenhum plano de implementação foi exe
 Escopo incremental: a consulta inicial reconhece os tipos de dia publicados e o dia da semana; a seleção completa por feriados locais pertence à Phase 2. A primeira entrega não promete calendário de feriados nem notificações antes dessas capacidades serem concluídas. Modelo de identidade, formato das coleções e política de rejeição devem ser definidos ao planejar esta fase, respeitando a representação aprovada.
 
 ### Phase 2: Calendário local e consulta completa
-**Goal:** O passageiro consulta os horários adequados à data local, incluindo feriados, vê a lista completa do ponto e navega de volta aos outros endereços da linha.
+**Goal:** As a passageiro que consulta horários de ônibus pelo Telegram, I want to consultar os horários do ponto conforme a data e os feriados, ver a lista completa e voltar à escolha de endereço, so that eu possa planejar minha viagem com os horários corretos do dia e escolher o ponto mais conveniente.
 **Mode:** mvp
 **Depends on:** Phase 1.
 **Requirements:** TIME-02, TIME-04, BOT-04, BOT-05

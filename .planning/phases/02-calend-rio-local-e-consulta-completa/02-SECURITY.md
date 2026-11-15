@@ -48,3 +48,11 @@ Auditor verificou T-02-01..04 em código/testes; T-02-SC foi encerrada ao persis
 - [x] Risco aceito documentado.
 - [x] threats_open: 0, limiar high.
 - [x] status: verified.
+
+## Security Audit 2026-11-15
+
+| Metric | Count |
+|---|---|
+| Threats found | 6 |
+| Closed | 6 |
+| Open | 0 |
