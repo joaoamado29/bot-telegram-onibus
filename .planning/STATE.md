@@ -2,17 +2,17 @@
 gsd_state_version: "1.0"
 current_phase: 02
 current_phase_name: Calendário local e consulta completa
-status: complete
-stopped_at: Phase 1 complete; ready for Phase 2 (Calendário de operação e feriados)
-last_updated: "2026-11-13T20:20:57.051Z"
-last_activity: 2026-11-13
-last_activity_desc: "Fase 1 completa: 4 planos concluídos, 44 testes verdes e smoke real aprovado no Telegram."
-state_head: a00541db9ac6831e0490b2bb68775da9a9c4e653
+status: verifying
+stopped_at: Phase 02 plans complete; awaiting Telegram UAT
+last_updated: "2026-11-15T13:40:59.394Z"
+last_activity: 2026-11-15
+last_activity_desc: Phase 02 implemented; 64 tests passed; Telegram UAT pending
+state_head: ac0471efd09e8e8bc0f1d10b221e6d8871361b30
 progress:
   total_phases: 5
   completed_phases: 1
   total_plans: 6
-  completed_plans: 4
+  completed_plans: 6
   percent: 20
 ---
 
@@ -23,21 +23,21 @@ progress:
 See: .planning/PROJECT.md (updated 2026-11-13)
 
 **Core value:** Permitir consultar os próximos horários do ponto escolhido e receber avisos antes da saída, conforme Brasília e o calendário de operação.
-**Current focus:** Fase 1 concluída com sucesso; preparar início da Fase 2 (Calendário de operação e feriados).
+**Current focus:** Fase 02 implementada; validar dois cenários no Telegram antes de concluir a fase.
 
 ## Current Position
 
-Phase: 02 (Calendário local e consulta completa) — READY TO EXECUTE
-Plan: 4 of 4 in current phase completed (01-01, 01-02, 01-03, 01-04 done)
-Status: Fase 1 100% concluída e verificada com o usuário no Telegram
-Last activity: 2026-11-13 — Smoke test do fluxo completo aprovado no Telegram.
+Phase: 02 (Calendário local e consulta completa) — AWAITING UAT
+Plan: 2 of 2 concluídos (02-01 e 02-02)
+Status: human_needed — implementação verificada, teste real no Telegram pendente
+Last activity: 2026-11-15 — 64 testes verdes, revisão clean e segurança sem ameaças abertas.
 
 Progress: [██░░░░░░░░] 20%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 4
+- Total plans completed: 6
 - Average duration: 29 min
 - Total execution time: 1.9 horas
 
@@ -69,9 +69,8 @@ Nenhum item adicional capturado.
 
 ### Blockers/Concerns
 
-- Roadmap aprovado; nenhum plano ou código foi executado nesta inicialização.
-- Phase 1: confirmar identidade/cardinalidade das tabelas e tratamento de páginas sem as duas coleções obrigatórias; amostra real possui 26/27 horários entre pontos e anúncios nas listas.
-- Phase 2: selecionar fonte verificável de feriados e distinguir calendário ausente de fim das saídas.
+- Phase 2: dois testes reais no Telegram pendentes em 02-UAT.md; não avançar antes da validação.
+- Catálogo de feriados exige revisão anual das fontes oficiais.
 - Phase 4: definir validação da antecedência e ativação tardia; hospedagem/disponibilidade do processo influenciam entrega dos avisos.
 
 ## Deferred Items
@@ -82,6 +81,8 @@ Nenhum item adicional capturado.
 
 ## Session Continuity
 
-Last session: 2026-11-13T17:03:50.739Z
-Stopped at: Plan 01-01 task 2 committed; awaiting local Telegram token and live tracer smoke
-Resume file: .planning/phases/01-primeiras-consultas-no-telegram/01-01-PLAN.md
+Last session: 2026-11-15T15:11:47+00:00
+Stopped at: Phase 02 implemented; 64 tests pass; review clean; human_needed with 2 Telegram UAT items.
+Resume file: .planning/phases/02-calend-rio-local-e-consulta-completa/02-UAT.md
+
+Next command: $gsd-verify-work 2. Both plans summarized; code commit 5fd45d7. Preserve prior user changes in bot.py and onibus/refresh.py. Phase 02 remains pending UAT; do not advance to phase 03 yet.
