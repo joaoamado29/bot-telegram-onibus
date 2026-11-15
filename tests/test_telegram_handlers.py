@@ -96,7 +96,7 @@ class TelegramHandlersTests(unittest.IsolatedAsyncioTestCase):
         self.assertIn("Ver horários", [b.text for b in botoes])
         data = next(b.callback_data for b in botoes if b.text == "Ver horários")
         encontrados = []
-        for _ in range(10):
+        while True:
             pagina = await self._clique(data)
             resposta = pagina.edit_message_text.call_args.kwargs
             self.assertLessEqual(len(resposta["text"]), 4096)

@@ -18,6 +18,7 @@ _CALLBACK_RE = re.compile(r"p:([0-9]{1,10}):([0-9]{1,10}):([1-5])")
 _HORARIOS_RE = re.compile(r"h:([0-9]{1,10}):([0-9]{1,10}):([1-5]):([0-9]{8}):([0-9]{1,4})")
 _VOLTAR_RE = re.compile(r"b:([0-9]{1,10}):([0-9]{1,10})")
 _CALENDARIOS = {"uteis": "Dias úteis", "sabados": "Sábados", "domingos_feriados": "Domingos e feriados"}
+_HORARIOS_POR_PAGINA = 28
 
 
 def build_application(token: str, db_path: str | Path) -> Application:
@@ -152,15 +153,18 @@ def _paginas_horarios(consulta: ConsultaSaidas) -> list[str]:
         limite = 4096 - len(cabecalho) - len(rotulo)
         grupos = []
         atual = ""
+        quantidade_atual = 0
         for horario in consulta.todos_horarios:
             if len(horario) > limite:
                 raise ValueError("Identificação excede o limite da mensagem")
             candidato = f"{atual}, {horario}" if atual else horario
-            if len(candidato) > limite:
+            if len(candidato) > limite or quantidade_atual >= _HORARIOS_POR_PAGINA:
                 grupos.append(atual)
                 atual = horario
+                quantidade_atual = 1
             else:
                 atual = candidato
+                quantidade_atual += 1
         grupos.append(atual)
         if len(grupos) == total:
             return [f"{cabecalho}\nTodos os horários — Página {i + 1}/{total}:\n{grupo}" for i, grupo in enumerate(grupos)]
