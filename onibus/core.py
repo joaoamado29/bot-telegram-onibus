@@ -44,6 +44,7 @@ class ConsultaSaidas:
     numero: int = 0
     nome: str = ""
     feriados: tuple[str, ...] = ()
+    todos_horarios: tuple[str, ...] = ()
 
 
 def _validar_url(url: str) -> str:
@@ -262,5 +263,5 @@ def proximas_saidas(conn: sqlite3.Connection, numero: int, ponto: int, agora: da
     )[:3]
     return ConsultaSaidas(
         local.date(), calendario, endereco, futuros, "disponivel" if futuros else "encerrado",
-        numero=numero, nome=nome_linha, feriados=nomes_feriados,
+        numero=numero, nome=nome_linha, feriados=nomes_feriados, todos_horarios=publicados,
     )

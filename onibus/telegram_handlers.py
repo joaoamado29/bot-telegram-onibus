@@ -15,6 +15,9 @@ from onibus.search import buscar_sugestoes
 
 # Padrão do callback data: p:numero:revisao:posicao (exemplo: p:11:1:1)
 _CALLBACK_RE = re.compile(r"p:([0-9]{1,10}):([0-9]{1,10}):([1-5])")
+_HORARIOS_RE = re.compile(r"h:([0-9]{1,10}):([0-9]{1,10}):([1-5]):([0-9]{8}):([0-9]{1,4})")
+_VOLTAR_RE = re.compile(r"b:([0-9]{1,10}):([0-9]{1,10})")
+_CALENDARIOS = {"uteis": "Dias úteis", "sabados": "Sábados", "domingos_feriados": "Domingos e feriados"}
 
 
 def build_application(token: str, db_path: str | Path) -> Application:
@@ -117,13 +120,68 @@ def formato_saidas(consulta: ConsultaSaidas) -> str:
     return cabecalho + "\nPróximas saídas:\n" + "\n".join(consulta.horarios)
 
 
+def _teclado_consulta(numero: int, revisao: int, posicao: int, consulta: ConsultaSaidas) -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup([
+        [InlineKeyboardButton("Ver horários", callback_data=f"h:{numero}:{revisao}:{posicao}:{consulta.data:%Y%m%d}:0")],
+        [InlineKeyboardButton("Voltar", callback_data=f"b:{numero}:{revisao}")],
+    ])
+
+
+def _paginas_horarios(consulta: ConsultaSaidas) -> list[str]:
+    """Divide a lista sem remover horários e repete a identificação em cada página."""
+    cabecalho = (
+        f"{consulta.numero:03d} - {consulta.nome}\n{consulta.endereco}\n"
+        f"{consulta.data:%d/%m/%Y} — horário de Brasília\n{_CALENDARIOS[consulta.calendario]}"
+    )
+    if consulta.feriados:
+        cabecalho += "\nFeriado(s): " + ", ".join(consulta.feriados)
+    if consulta.status == "indisponivel":
+        texto = cabecalho + "\nHorários indisponíveis para este ponto e calendário."
+        if len(texto) > 4096:
+            raise ValueError("Identificação excede o limite da mensagem")
+        return [texto]
+    total = 1
+    while True:
+        rotulo = f"\nTodos os horários — Página {total}/{total}:\n"
+        limite = 4096 - len(cabecalho) - len(rotulo)
+        grupos = []
+        atual = ""
+        for horario in consulta.todos_horarios:
+            if len(horario) > limite:
+                raise ValueError("Identificação excede o limite da mensagem")
+            candidato = f"{atual}, {horario}" if atual else horario
+            if len(candidato) > limite:
+                grupos.append(atual)
+                atual = horario
+            else:
+                atual = candidato
+        grupos.append(atual)
+        if len(grupos) == total:
+            return [f"{cabecalho}\nTodos os horários — Página {i + 1}/{total}:\n{grupo}" for i, grupo in enumerate(grupos)]
+        total = len(grupos)
+
+
+def _voltar(db_path: str | Path, numero: int, revisao: int) -> tuple[str, InlineKeyboardMarkup] | None:
+    with closing(conectar(db_path)) as conn:
+        pontos = carregar_pontos(conn, numero)
+        if pontos is None or pontos["revisao"] != revisao:
+            return None
+        artigo = criar_artigo(pontos, pontos)
+        return artigo.input_message_content.message_text, artigo.reply_markup
+
+
 def _consultar(db_path: str | Path, numero: int, revisao: int, posicao: int, agora: datetime) -> ConsultaSaidas | None:
     """
     O que faz: Valida a revisão dos dados e obtém as próximas saídas para o ponto selecionado.
     Por que foi feito assim: Se a linha foi atualizada e a revisão mudou, retorna None para
     que o usuário seja orientado a refazer a busca, evitando exibir dados obsoletos.
     """
+    if posicao not in range(1, 6):
+        return None
     with closing(conectar(db_path)) as conn:
+        # SELECT isolado não mantém snapshot no sqlite3; fixamos a revisão
+        # e suas listas na mesma transação até a conexão ser fechada.
+        conn.execute("BEGIN")
         pontos = carregar_pontos(conn, numero)
         if pontos is None or pontos["revisao"] != revisao or not pontos[f"ponto{posicao}"]:
             return None
@@ -139,17 +197,51 @@ async def ponto_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     query = update.callback_query
     if query is None:
         return
-    match = _CALLBACK_RE.fullmatch(query.data or "")
-    if match is None:
+    data = query.data if isinstance(query.data, str) else ""
+    match = _CALLBACK_RE.fullmatch(data)
+    horarios_match = _HORARIOS_RE.fullmatch(data)
+    voltar_match = _VOLTAR_RE.fullmatch(data)
+    if match is None and horarios_match is None and voltar_match is None:
         await query.answer("Seleção inválida. Busque a linha novamente.", show_alert=True)
         return
 
-    await query.answer()
     agora = context.bot_data.get("clock", lambda: datetime.now(BRT))()
-    consulta = await asyncio.to_thread(_consultar, context.bot_data["db_path"], *map(int, match.groups()), agora)
-    texto = formato_saidas(consulta) if consulta else "Esta seleção expirou porque os dados foram atualizados. Busque a linha novamente."
+    teclado = None
+    if voltar_match:
+        resultado = await asyncio.to_thread(_voltar, context.bot_data["db_path"], *map(int, voltar_match.groups()))
+        texto, teclado = resultado if resultado else ("Esta seleção expirou. Busque a linha novamente.", None)
+    else:
+        campos = (match or horarios_match).groups()
+        numero, revisao, posicao = map(int, campos[:3])
+        if horarios_match:
+            try:
+                agora = datetime.strptime(campos[3], "%Y%m%d").replace(tzinfo=BRT)
+            except ValueError:
+                await query.answer("Data inválida. Busque a linha novamente.", show_alert=True)
+                return
+        consulta = await asyncio.to_thread(_consultar, context.bot_data["db_path"], numero, revisao, posicao, agora)
+        texto = formato_saidas(consulta) if consulta else "Esta seleção expirou porque os dados foram atualizados. Busque a linha novamente."
+        if consulta:
+            teclado = _teclado_consulta(numero, revisao, posicao, consulta)
+            if horarios_match:
+                try:
+                    paginas = _paginas_horarios(consulta)
+                except ValueError:
+                    await query.answer("Não é possível exibir esta identificação no Telegram. Use Voltar para escolher outro ponto.", show_alert=True)
+                    return
+                pagina = int(campos[4])
+                if pagina >= len(paginas):
+                    await query.answer("Página inválida. Busque a linha novamente.", show_alert=True)
+                    return
+                texto = paginas[pagina]
+                botoes = []
+                for rotulo, indice in (("Anterior", pagina - 1), ("Próxima", pagina + 1)):
+                    if 0 <= indice < len(paginas):
+                        botoes.append(InlineKeyboardButton(rotulo, callback_data=f"h:{numero}:{revisao}:{posicao}:{campos[3]}:{indice}"))
+                teclado = InlineKeyboardMarkup(([botoes] if botoes else []) + [[InlineKeyboardButton("Voltar", callback_data=f"b:{numero}:{revisao}")]])
+    await query.answer()
     try:
-        await query.edit_message_text(text=texto)
+        await query.edit_message_text(text=texto, reply_markup=teclado)
     except BadRequest as exc:
         if "message is not modified" not in str(exc).lower():
             raise

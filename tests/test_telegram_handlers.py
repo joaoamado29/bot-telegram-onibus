@@ -1,16 +1,17 @@
 from __future__ import annotations
 
 import tempfile
+import re
 import unittest
 from contextlib import closing
 from datetime import datetime
 from pathlib import Path
 from types import SimpleNamespace
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, patch
 from zoneinfo import ZoneInfo
 
-from onibus.core import BRT, HorariosLinha, PontoHorario, conectar, publicar_linha
-from onibus.telegram_handlers import build_application, inline_query, ponto_callback, start
+from onibus.core import BRT, HorariosLinha, PontoHorario, conectar, publicar_linha, proximas_saidas
+from onibus.telegram_handlers import build_application, inline_query, ponto_callback, start, _consultar
 
 
 class TelegramHandlersTests(unittest.IsolatedAsyncioTestCase):
@@ -41,6 +42,129 @@ class TelegramHandlersTests(unittest.IsolatedAsyncioTestCase):
 
     def tearDown(self) -> None:
         self.temp_dir.cleanup()
+
+    async def _clique(self, data):
+        callback = SimpleNamespace(data=data, answer=AsyncMock(), edit_message_text=AsyncMock())
+        await ponto_callback(SimpleNamespace(callback_query=callback), self.context)
+        return callback
+
+    async def test_ver_horarios_inclui_passados_e_preserva_data(self) -> None:
+        self.context.bot_data["clock"] = lambda: datetime(2026, 11, 13, 11, 15, tzinfo=BRT)
+        callback = await self._clique("p:11:1:1")
+        resposta = callback.edit_message_text.call_args.kwargs
+        botoes = [b for row in resposta.get("reply_markup", SimpleNamespace(inline_keyboard=[])).inline_keyboard for b in row]
+        self.assertIn("Ver horários", [b.text for b in botoes])
+        data = next(b.callback_data for b in botoes if b.text == "Ver horários")
+        self.context.bot_data["clock"] = lambda: datetime(2026, 11, 14, 1, tzinfo=BRT)
+        completo = await self._clique(data)
+        texto = completo.edit_message_text.call_args.kwargs["text"]
+        self.assertEqual(re.findall(r"\b\d{2}:\d{2}\b", texto), ["10:00", "11:00", "12:00"])
+        self.assertIn("13/11/2026", texto)
+        self.assertIn("Dias úteis", texto)
+
+    async def test_lista_extensa_pagina_sem_perdas(self) -> None:
+        valores = tuple(f"{h:02d}:{m:02d}" for h in range(24) for m in range(60))
+        with closing(conectar(self.db_path)) as conn:
+            publicar_linha(conn, HorariosLinha(11, "Circular Centro", (PontoHorario("Terminal A", {"uteis": valores}), PontoHorario("Terminal B", {"uteis": valores}))))
+        callback = await self._clique("p:11:2:1")
+        resposta = callback.edit_message_text.call_args.kwargs
+        botoes = [b for row in resposta.get("reply_markup", SimpleNamespace(inline_keyboard=[])).inline_keyboard for b in row]
+        self.assertIn("Ver horários", [b.text for b in botoes])
+        data = next(b.callback_data for b in botoes if b.text == "Ver horários")
+        encontrados = []
+        for _ in range(10):
+            pagina = await self._clique(data)
+            resposta = pagina.edit_message_text.call_args.kwargs
+            self.assertLessEqual(len(resposta["text"]), 4096)
+            self.assertIn("Terminal A", resposta["text"])
+            encontrados.extend(re.findall(r"\b\d{2}:\d{2}\b", resposta["text"]))
+            botoes = [b for row in resposta["reply_markup"].inline_keyboard for b in row]
+            proximo = next((b for b in botoes if b.text == "Próxima"), None)
+            if proximo is None:
+                break
+            data = proximo.callback_data
+        self.assertEqual(encontrados, list(valores))
+
+    async def test_voltar_reconstroi_enderecos_e_permite_outro_ponto(self) -> None:
+        inicio = await self._clique("p:11:1:1")
+        botoes = [b for row in inicio.edit_message_text.call_args.kwargs["reply_markup"].inline_keyboard for b in row]
+        retorno = await self._clique(next(b.callback_data for b in botoes if b.text == "Voltar"))
+        resposta = retorno.edit_message_text.call_args.kwargs
+        self.assertIn("Terminal A", resposta["text"])
+        self.assertIn("Terminal B", resposta["text"])
+        outro = await self._clique(resposta["reply_markup"].inline_keyboard[1][0].callback_data)
+        self.assertIn("Terminal B", outro.edit_message_text.call_args.kwargs["text"])
+        self.assertNotIn("Terminal A", outro.edit_message_text.call_args.kwargs["text"])
+
+    async def test_callbacks_navegacao_invalidos_nao_editam(self) -> None:
+        for data in ("p:11:1:0", "p:11:1:6", "h:11:1:1:20261113:-1", "h:11:1:1:20261113:9999", "h:11:1:1:20260231:0", "x:11:1", "b:11:1:extra", None, 123):
+            with self.subTest(data=data):
+                callback = await self._clique(data)
+                callback.edit_message_text.assert_not_awaited()
+
+    async def test_data_e_pagina_invalidas_explicam_erro(self) -> None:
+        for data in ("h:11:1:1:20260231:0", "h:11:1:1:20261113:9999"):
+            callback = await self._clique(data)
+            callback.answer.assert_awaited_once()
+            self.assertTrue(callback.answer.call_args.args)
+            self.assertTrue(callback.answer.call_args.kwargs["show_alert"])
+
+    async def test_cabecalho_longo_que_cabe_abre_lista(self) -> None:
+        with closing(conectar(self.db_path)) as conn:
+            conn.execute("UPDATE pontos SET ponto1=? WHERE numero=11", ("A" * 3950,))
+            conn.commit()
+        inicial = await self._clique("p:11:1:1")
+        self.assertLessEqual(len(inicial.edit_message_text.call_args.kwargs["text"]), 4096)
+        lista = await self._clique("h:11:1:1:20261113:0")
+        lista.edit_message_text.assert_awaited_once()
+        self.assertLessEqual(len(lista.edit_message_text.call_args.kwargs["text"]), 4096)
+        self.assertIn("A" * 3950, lista.edit_message_text.call_args.kwargs["text"])
+
+    async def test_identificacao_excessiva_informa_erro(self) -> None:
+        with closing(conectar(self.db_path)) as conn:
+            conn.execute("UPDATE pontos SET ponto1=? WHERE numero=11", ("A" * 4100,))
+            conn.commit()
+        callback = await self._clique("h:11:1:1:20261113:0")
+        callback.edit_message_text.assert_not_awaited()
+        callback.answer.assert_awaited_once()
+        self.assertTrue(callback.answer.call_args.args)
+        self.assertTrue(callback.answer.call_args.kwargs["show_alert"])
+
+    def test_consulta_mantem_snapshot_durante_publicacao(self) -> None:
+        with closing(conectar(self.db_path)) as conn:
+            conn.execute("PRAGMA journal_mode=WAL")
+        def publicar_durante_consulta(conn, numero, posicao, agora):
+            with closing(conectar(self.db_path)) as escrita:
+                publicar_linha(escrita, HorariosLinha(11, "Nova linha", (
+                    PontoHorario("Terminal NOVO", {"uteis": ("13:00",)}),
+                    PontoHorario("Outro NOVO", {"uteis": ("13:30",)}),
+                )))
+            return proximas_saidas(conn, numero, posicao, agora)
+        with patch("onibus.telegram_handlers.proximas_saidas", side_effect=publicar_durante_consulta):
+            consulta = _consultar(self.db_path, 11, 1, 1, datetime(2026, 11, 13, 9, tzinfo=BRT))
+        self.assertEqual(consulta.endereco, "Terminal A")
+        self.assertEqual(consulta.horarios, ("10:00", "11:00", "12:00"))
+
+    async def test_navegacao_obsoleta_nao_exibe_horarios_ou_enderecos(self) -> None:
+        for data in ("b:11:0", "h:11:0:1:20261113:0", "h:999:1:1:20261113:0", "h:11:1:5:20261113:0"):
+            with self.subTest(data=data):
+                callback = await self._clique(data)
+                texto = callback.edit_message_text.call_args.kwargs["text"]
+                self.assertIn("expirou", texto)
+                self.assertNotIn("Terminal", texto)
+
+    async def test_ver_horarios_feriado_e_indisponibilidade(self) -> None:
+        with closing(conectar(self.db_path)) as conn:
+            conn.execute("INSERT INTO horarios (numero,nome,calendario,horario_ponto1,horario_ponto2) VALUES (11,'Circular Centro','domingos_feriados','[\"08:00\",\"14:00\"]','[\"08:30\"]')")
+            conn.commit()
+        feriado = await self._clique("h:11:1:1:20260325:0")
+        texto = feriado.edit_message_text.call_args.kwargs["text"]
+        self.assertIn("Data Magna do Ceará", texto)
+        self.assertEqual(re.findall(r"\b\d{2}:\d{2}\b", texto), ["08:00", "14:00"])
+        ausente = await self._clique("h:11:1:1:20261114:0")
+        texto = ausente.edit_message_text.call_args.kwargs["text"]
+        self.assertIn("indisponíveis", texto)
+        self.assertNotIn("terminaram", texto)
 
     async def test_start_envia_botao_de_busca_inline(self) -> None:
         """
