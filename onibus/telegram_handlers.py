@@ -49,6 +49,10 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         )
 
 
+def _botao_buscar_outra_linha() -> InlineKeyboardButton:
+    return InlineKeyboardButton("Buscar outra linha", switch_inline_query_current_chat="")
+
+
 def criar_artigo(linha, pontos) -> InlineQueryResultArticle:
     """
     O que faz: Monta o card de resultado inline para uma linha de ônibus.
@@ -62,6 +66,7 @@ def criar_artigo(linha, pontos) -> InlineQueryResultArticle:
         for i in range(1, 6)
         if pontos and pontos[f"ponto{i}"]
     ]
+    teclado.append([_botao_buscar_outra_linha()])
     return InlineQueryResultArticle(
         id=f"l:{linha['numero']}:{pontos['revisao'] if pontos else 1}",
         title=titulo[:256],
@@ -124,6 +129,7 @@ def _teclado_consulta(numero: int, revisao: int, posicao: int, consulta: Consult
     return InlineKeyboardMarkup([
         [InlineKeyboardButton("Ver horários", callback_data=f"h:{numero}:{revisao}:{posicao}:{consulta.data:%Y%m%d}:0")],
         [InlineKeyboardButton("Voltar", callback_data=f"b:{numero}:{revisao}")],
+        [_botao_buscar_outra_linha()],
     ])
 
 
@@ -238,7 +244,13 @@ async def ponto_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
                 for rotulo, indice in (("Anterior", pagina - 1), ("Próxima", pagina + 1)):
                     if 0 <= indice < len(paginas):
                         botoes.append(InlineKeyboardButton(rotulo, callback_data=f"h:{numero}:{revisao}:{posicao}:{campos[3]}:{indice}"))
-                teclado = InlineKeyboardMarkup(([botoes] if botoes else []) + [[InlineKeyboardButton("Voltar", callback_data=f"b:{numero}:{revisao}")]])
+                teclado = InlineKeyboardMarkup(
+                    ([botoes] if botoes else [])
+                    + [
+                        [InlineKeyboardButton("Voltar", callback_data=f"b:{numero}:{revisao}")],
+                        [_botao_buscar_outra_linha()],
+                    ]
+                )
     await query.answer()
     try:
         await query.edit_message_text(text=texto, reply_markup=teclado)

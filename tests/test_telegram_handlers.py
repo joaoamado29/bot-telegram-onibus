@@ -48,6 +48,30 @@ class TelegramHandlersTests(unittest.IsolatedAsyncioTestCase):
         await ponto_callback(SimpleNamespace(callback_query=callback), self.context)
         return callback
 
+    def _assert_buscar_outra_linha(self, markup) -> None:
+        botoes = [botao for linha in markup.inline_keyboard for botao in linha]
+        busca = [botao for botao in botoes if botao.text == "Buscar outra linha"]
+        self.assertEqual(len(busca), 1)
+        self.assertEqual(busca[0].switch_inline_query_current_chat, "")
+        self.assertIsNone(busca[0].callback_data)
+
+    async def test_buscar_outra_linha_em_pontos_consultas_e_retorno(self) -> None:
+        query = SimpleNamespace(query="11", offset="", answer=AsyncMock())
+        await inline_query(SimpleNamespace(inline_query=query), self.context)
+        artigo = query.answer.call_args.kwargs["results"][0]
+        self._assert_buscar_outra_linha(artigo.reply_markup)
+
+        for data in ("p:11:1:1", "b:11:1", "h:11:1:1:20261113:0", "h:11:1:1:20261114:0"):
+            with self.subTest(data=data):
+                callback = await self._clique(data)
+                self._assert_buscar_outra_linha(callback.edit_message_text.call_args.kwargs["reply_markup"])
+
+        for instante in (datetime(2026, 11, 13, 23, tzinfo=BRT), datetime(2026, 11, 14, 9, tzinfo=BRT)):
+            with self.subTest(instante=instante):
+                self.context.bot_data["clock"] = lambda: instante
+                callback = await self._clique("p:11:1:1")
+                self._assert_buscar_outra_linha(callback.edit_message_text.call_args.kwargs["reply_markup"])
+
     async def test_ver_horarios_inclui_passados_e_preserva_data(self) -> None:
         self.context.bot_data["clock"] = lambda: datetime(2026, 11, 13, 11, 15, tzinfo=BRT)
         callback = await self._clique("p:11:1:1")
@@ -79,6 +103,8 @@ class TelegramHandlersTests(unittest.IsolatedAsyncioTestCase):
             self.assertIn("Terminal A", resposta["text"])
             encontrados.extend(re.findall(r"\b\d{2}:\d{2}\b", resposta["text"]))
             botoes = [b for row in resposta["reply_markup"].inline_keyboard for b in row]
+            self._assert_buscar_outra_linha(resposta["reply_markup"])
+            self.assertIn("Voltar", [botao.text for botao in botoes])
             proximo = next((b for b in botoes if b.text == "Próxima"), None)
             if proximo is None:
                 break
@@ -201,11 +227,12 @@ class TelegramHandlersTests(unittest.IsolatedAsyncioTestCase):
         artigo = results[0]
         self.assertIn("011 - Circular Centro", artigo.title)
         self.assertIn("Terminal A", artigo.input_message_content.message_text)
-        # Teclado do artigo possui 2 botões para os 2 pontos
+        # Dois pontos preservados e uma ação adicional para buscar outra linha.
         botoes = artigo.reply_markup.inline_keyboard
-        self.assertEqual(len(botoes), 2)
+        self.assertEqual(len(botoes), 3)
         self.assertEqual(botoes[0][0].callback_data, "p:11:1:1")
         self.assertEqual(botoes[1][0].callback_data, "p:11:1:2")
+        self._assert_buscar_outra_linha(artigo.reply_markup)
 
     async def test_ponto_callback_inline_sem_message_retorna_saidas(self) -> None:
         """
