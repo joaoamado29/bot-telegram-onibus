@@ -9,7 +9,7 @@ last_activity: 2026-11-15
 last_activity_desc: Phase 02 implemented; 64 tests passed; Telegram UAT pending
 state_head: ac0471efd09e8e8bc0f1d10b221e6d8871361b30
 progress:
-  total_phases: 5
+  total_phases: 6
   completed_phases: 1
   total_plans: 6
   completed_plans: 6
@@ -64,6 +64,10 @@ Decisões completas em `.planning/PROJECT.md`.
 - Alertas futuros devem ser recuperados após reinício; avisos vencidos são ignorados e o usuário pode cancelar.
 
 ### Pending Todos
+
+### Roadmap Evolution
+
+- Fase 6 adicionada em 2026-11-15: melhorar clareza das respostas do bot. Detalhar textos, apresentação e navegação com o usuário antes de planejar.
 
 Nenhum item adicional capturado.
 

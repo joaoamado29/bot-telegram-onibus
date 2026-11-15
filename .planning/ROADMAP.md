@@ -13,6 +13,7 @@ Este roadmap foi aprovado pelo usuário; nenhum plano de implementação foi exe
 - [ ] **Phase 3: Consulta do dia seguinte** - Receber aviso de fim das saídas e consultar amanhã separadamente.
 - [ ] **Phase 4: Alertas da viagem escolhida** - Escolher uma saída, informar antecedência e receber contagens e aviso final.
 - [ ] **Phase 5: Continuidade e cancelamento dos alertas** - Manter alertas futuros após reinício e cancelar acompanhamentos pelo Telegram.
+- [ ] **Phase 6: Melhorar clareza das respostas do bot**
 
 ## Phase Details
 
@@ -100,7 +101,7 @@ Definir no planejamento a validação de minutos e a ativação quando o primeir
 
 ## Progress
 
-**Execution Order:** 1 → 2 → 3 → 4 → 5. Dentro de cada fase, planos independentes podem executar em paralelo conforme `.planning/config.json`; dependências funcionais entre fases permanecem obrigatórias.
+**Execution Order:** 1 → 2 → 3 → 4 → 5 → 6. Dentro de cada fase, planos independentes podem executar em paralelo conforme `.planning/config.json`; dependências funcionais entre fases permanecem obrigatórias.
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
@@ -109,6 +110,7 @@ Definir no planejamento a validação de minutos e a ativação quando o primeir
 | 3. Consulta do dia seguinte | 0/TBD | Not started | - |
 | 4. Alertas da viagem escolhida | 0/TBD | Not started | - |
 | 5. Continuidade e cancelamento dos alertas | 0/TBD | Not started | - |
+| 6. Melhorar clareza das respostas do bot | 0/TBD | Not started | - |
 
 ## Requirement Coverage
 
@@ -118,6 +120,23 @@ Definir no planejamento a validação de minutos e a ativação quando o primeir
 - Phase 4: 6 requisitos.
 - Phase 5: 2 requisitos.
 - Total: 24/24 requisitos mapeados, cada um em exatamente uma fase; nenhum órfão.
+
+### Phase 6: Melhorar clareza das respostas do bot
+
+**Goal:** O passageiro entende as respostas do bot e encontra a próxima ação com facilidade, com mensagens em português claras, identificação consistente da consulta e explicações úteis quando faltarem dados.
+**Mode:** mvp
+**Success Criteria:**
+1. Revisar com o usuário exemplos de respostas de consulta, indisponibilidade, fim dos horários e alertas, antes de definir os textos finais.
+2. Padronizar títulos, datas, horários, nomes dos botões e orientações de navegação no fluxo do Telegram.
+3. Explicar a ausência de calendário ou de dados sem confundir com fim das saídas nem inventar horários.
+4. Apresentar paginação e controles de forma clara, evitando informações desnecessárias em listas de uma única página.
+**UI hint:** yes
+**Requirements**: TBD
+**Depends on:** Phase 5
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 6 to break down)
 
 ---
 *Created: 2026-11-13; roadmap em modo MVP aprovado pelo usuário.*
