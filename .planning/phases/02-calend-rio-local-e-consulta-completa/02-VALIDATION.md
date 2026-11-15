@@ -37,6 +37,7 @@ Auditoria independente dos requisitos TIME-02, TIME-04, BOT-04 e BOT-05. Os test
 | 02-01-02 | 01 | 1 | TIME-02 | T-02-01 | Datas fixas/móveis, colisões e exceção anual não inventam feriado | unit | `.venv/Scripts/python.exe -m unittest discover -s tests -p test_schedules.py -v` | sim | green |
 | 02-02-01 | 02 | 2 | BOT-04 | T-02-04 | Lista integral conserva passados/data/calendário; páginas não perdem valores | integration | `.venv/Scripts/python.exe -m unittest discover -s tests -p test_telegram_handlers.py -v` | sim | green |
 | 02-02-02 | 02 | 2 | BOT-05 | T-02-03 | Voltar conserva linha; seleção expirada/inválida não lê outra revisão | integration | `.venv/Scripts/python.exe -m unittest discover -s tests -p test_telegram_handlers.py -v` | sim | green |
+| 02-03-01 | 03 | 3 | BOT-04, BOT-05 | T-02-05 | Buscar outra linha abre a busca existente em todos os teclados sem remover Voltar | integration | `.venv/Scripts/python.exe -m unittest discover -s tests -p test_telegram_handlers.py -v` | sim | green |
 
 ## Evidência comportamental por requisito
 
@@ -54,6 +55,8 @@ A lista extensa compara os 1.440 valores publicados com a concatenação das pá
 A infraestrutura existente cobre todos os requisitos da fase. Nenhuma dependência ou fixture adicional foi necessária nesta auditoria.
 
 ## Manual-Only Verifications
+
+Auditoria incremental 02-03: 65 testes verdes (3.215s); revisão independente confirmou 17 handlers verdes e cobertura do botão na escolha de pontos, consultas, retorno e páginas de 1440 horários. Nenhuma lacuna automatizável adicional encontrada. Abertura real da busca inline pelo botão continua pendente de UAT.
 
 Não há lacuna automatizável nos quatro requisitos. O smoke visual no Telegram real continua recomendado para conferir renderização e usabilidade dos botões; esta auditoria usa mocks da API e não afirma ter executado esse smoke.
 

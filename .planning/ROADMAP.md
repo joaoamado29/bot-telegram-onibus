@@ -52,7 +52,8 @@ Escopo incremental: a consulta inicial reconhece os tipos de dia publicados e o 
 2. O usuário usa Ver horários e recebe todos os horários do endereço escolhido no dia consultado, preservando a identificação do ponto e do tipo de dia.
 3. O usuário usa Voltar e pode escolher outro endereço da mesma linha sem reiniciar a conversa.
 4. O usuário recebe mensagens distintas quando faltam dados/calendário e quando um calendário válido já não possui saídas futuras; ausência de tabela não vira uma afirmação de encerramento das saídas.
-**Plans:** 2/2 plans executed
+**Plans:** 3/3 plans executed
+- [x] 02-03-PLAN.md
 - [x] 02-01-PLAN.md
 - [x] 02-02-PLAN.md
 **UI hint:** yes
@@ -106,7 +107,7 @@ Definir no planejamento a validação de minutos e a ativação quando o primeir
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Primeiras consultas no Telegram | 0/4 | Planned     | - |
-| 2. Calendário local e consulta completa | 2/2 | In Progress | - |
+| 2. Calendário local e consulta completa | 3/3 | In Progress | - |
 | 3. Consulta do dia seguinte | 0/TBD | Not started | - |
 | 4. Alertas da viagem escolhida | 0/TBD | Not started | - |
 | 5. Continuidade e cancelamento dos alertas | 0/TBD | Not started | - |

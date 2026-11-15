@@ -1,40 +1,48 @@
 ---
 phase: 02-calend-rio-local-e-consulta-completa
-verified: "2026-11-15T14:57:22Z"
+verified: "2026-11-15T16:48:43Z"
 status: human_needed
-score: 8/8 must-haves verified
+score: 9/9 must-haves verified
 covered_files:
   - .planning/phases/02-calend-rio-local-e-consulta-completa/02-01-PLAN.md
   - .planning/phases/02-calend-rio-local-e-consulta-completa/02-01-SUMMARY.md
   - .planning/phases/02-calend-rio-local-e-consulta-completa/02-02-PLAN.md
   - .planning/phases/02-calend-rio-local-e-consulta-completa/02-02-SUMMARY.md
+  - .planning/phases/02-calend-rio-local-e-consulta-completa/02-03-PLAN.md
+  - .planning/phases/02-calend-rio-local-e-consulta-completa/02-03-SUMMARY.md
   - README.md
   - onibus/core.py
   - onibus/holidays.py
   - onibus/telegram_handlers.py
   - tests/test_schedules.py
   - tests/test_telegram_handlers.py
-covered_digest: "v4:sha256:79a85a1bd609a1dd15a066f4a58bd85e9ee51764dc1c5696af668f845e1602cf"
+covered_digest: "v4:sha256:50a46fb089e886d882ab09bd2fa713ad164e0b479cc03012df29653fe2bd0579"
 behavior_unverified: 0
 overrides_applied: 0
+re_verification:
+  previous_status: human_needed
+  previous_score: 8/8
+  gaps_closed: [G-02-2]
+  gaps_remaining: []
+  regressions: []
 decision_coverage:
   honored: 7
   total: 7
   not_honored: []
 human_verification:
-  - test: "No Telegram real, escolher uma linha e ponto, abrir Ver horários e usar Voltar para escolher outro ponto."
-    expected: "A mensagem inline mantém linha/endereço/data e tipo de dia; a lista completa inclui saídas passadas; Voltar apresenta os endereços da mesma linha e permite nova consulta sem /start."
-    why_human: "Os testes simulam a API; entrega real, renderização dos botões e clareza da mensagem no cliente Telegram não foram observadas nesta fase."
+  - test: "Após a correção, tocar Buscar outra linha na lista de pontos, próximas saídas e Ver horários no Telegram real."
+    expected: "A busca inline abre no chat atual e permite escolher outra linha sem /start; Voltar continua retornando aos pontos da linha atual."
+    why_human: "A propriedade e os teclados foram testados; abertura real da busca no cliente Telegram ainda não foi observada. Corresponde ao teste 3 pendente do UAT."
   - test: "Em uma consulta com várias páginas, navegar Próxima e Anterior no Telegram real e retornar aos endereços."
     expected: "Páginas identificadas, sem erro de tamanho ou desaparecimento dos controles; Voltar continua disponível em todas as páginas."
-    why_human: "O teste de 1440 horários prova conservação/limite no texto; a integração visual com o cliente Telegram requer observação humana."
+    why_human: "O teste de 1440 horários prova conservação/limite no texto; no UAT real foram observadas apenas listas Página 1/1. Teste 2 bloqueado por falta de lista multipágina real, sem falha comprovada."
 ---
 
 # Fase 02: Calendário local e consulta completa — Verificação
 
 **Objetivo:** O passageiro consulta os horários adequados à data local, incluindo feriados, vê a lista completa do ponto e navega de volta aos outros endereços da linha.
 
-**Status:** human_needed. Implementação e comportamentos automatizados verificados; smoke no Telegram real pendente. Nenhum bloqueio funcional encontrado nesta verificação inicial.
+**Status:** human_needed. Reverificação após o plano 02-03: implementação e comportamentos automatizados verificados; abertura real de Buscar outra linha e smoke multipágina pendentes. Nenhum bloqueio funcional encontrado. A evidência da verificação anterior permanece abaixo, identificada como histórica quando apropriado.
 
 ## Cobertura do fluxo do passageiro
 
@@ -45,6 +53,7 @@ human_verification:
 | Ver horários | Lista publicada integral, incluindo passados | `todos_horarios` recebe SELECT real; callback h preserva a data original | VERIFIED |
 | Navegar páginas | Todos os horários, uma vez, até 4096 caracteres por mensagem | `_paginas_horarios` calcula orçamento; teste percorre 1440 valores e compara lista exata | VERIFIED |
 | Voltar e trocar ponto | Endereços da mesma linha e nova seleção | `_voltar` revalida revisão e reutiliza `criar_artigo`; teste fluxo ponto1 → voltar → ponto2 | VERIFIED |
+| Buscar outra linha | Busca inline no chat atual em todos os teclados | `_botao_buscar_outra_linha` em `criar_artigo`, `_teclado_consulta` e páginas; teste nomeado executado nesta reverificação | VERIFIED |
 
 ## Objetivo e verdades observáveis
 
@@ -58,8 +67,9 @@ human_verification:
 | 6 | Feriado mostra nome e data local | VERIFIED | `ConsultaSaidas.feriados` flui para `formato_saidas` e `_paginas_horarios`; teste Telegram verifica nome e dia; código não substitui o calendário ausente. |
 | 7 | Paginação conserva horários e respeita limite por página | VERIFIED | Orçamento deriva do cabeçalho/rótulo efetivamente emitidos; teste de 1440 horários comprova igualdade da concatenação e <=4096. |
 | 8 | Callbacks inválidos/obsoletos não consultam outra posição/revisão | VERIFIED | fullmatch, posição 1..5, data válida, página no intervalo, revisão/endereço em snapshot BEGIN; teste concorrente WAL executado preserva endereço/horários da revisão1 durante publicação da revisão2. |
+| 9 | Buscar outra linha é oferecido nos pontos, consultas e páginas sem remover Voltar | VERIFIED | Helper em três construtores com `switch_inline_query_current_chat=""`; teste multietapas e teste de 1440 horários executados novamente e aprovados. |
 
-**Score:** 8/8 verdades verificadas; zero verdades presentes com comportamento não exercitado. Aparência/entrega real são verificações humanas adicionais, não alegadas como aprovadas.
+**Score:** 9/9 verdades verificadas no contrato automatizado; zero verdades presentes com transição não exercitada. A abertura da busca e a aparência/entrega no cliente real são verificações humanas adicionais, não alegadas como aprovadas.
 
 ## Artefatos — existência, substância e conexão
 
@@ -85,7 +95,7 @@ As duas consultas `verify.artifacts` retornaram 3/3 cada. `verify.key-links` ret
 
 Não há retorno estático substituindo horários reais. Literais de teste fornecem entradas independentes da implementação.
 
-## Verificações comportamentais executadas
+## Verificações comportamentais da rodada anterior
 
 Comando: `.venv/Scripts/python.exe -c` com unittest.loadTestsFromNames para `HolidaysCatalogTests`, `SchedulesTemporalTests` e os quatro testes nomeados abaixo. **18 testes, 0.373s, exit0.** Não foi repetida a suíte completa.
 
@@ -106,8 +116,8 @@ Probes externos: não declarados pelos planos; não aplicável. Não foram inici
 |---|---|---|---|
 | TIME-02 | 02-01 | Catálogo offline e precedência legal sobre weekday; testes de datas explícitas | SATISFIED |
 | TIME-04 | 02-01 | Estados indisponivel/encerrado distintos em core e resposta | SATISFIED |
-| BOT-04 | 02-02 | Callback h com data, lista integral e páginas; prova exata de conservação | SATISFIED |
-| BOT-05 | 02-02 | Callback b conserva linha e permite outra posição | SATISFIED |
+| BOT-04 | 02-02, 02-03 | Callback h com data, lista integral e páginas; prova exata de conservação e novo botão preservados | SATISFIED |
+| BOT-05 | 02-02, 02-03 | Callback b conserva linha e permite outra posição; busca adicional de linha reutiliza mecanismo existente | SATISFIED |
 
 Nenhum requisito órfão da fase. Consulta de amanhã e notificações pertencem às fases3–5, conforme ROADMAP; sua ausência não é lacuna desta entrega.
 
@@ -116,7 +126,7 @@ Nenhum requisito órfão da fase. Consulta de amanhã e notificações pertencem
 | Arquivo | Ativos | Desabilitados | Circularidade | Asserção mais forte | Parecer |
 |---|---:|---:|---:|---|---|
 | test_schedules.py | 14 | 0 | 0 | Valores/datas/status explícitos | Adequado |
-| test_telegram_handlers.py | 16 | 0 | 0 | Fluxos multietapas e listas exatas | Adequado |
+| test_telegram_handlers.py | 17 | 0 | 0 | Fluxos multietapas, parâmetros explícitos dos botões e listas exatas | Adequado |
 
 Nenhum marcador de dívida TBD/FIXME/XXX sem referência encontrado em produção/testes da fase. Tuplas vazias são defaults/estados indisponíveis e não stubs. O limite de identificação excessiva recebe alerta sem truncar o endereço; clientes reais ainda precisam do smoke abaixo.
 
@@ -126,11 +136,11 @@ Nenhum marcador de dívida TBD/FIXME/XXX sem referência encontrado em produçã
 
 ## Verificação humana necessária
 
-### 1. Consulta completa e retorno no Telegram real
+### 1. Buscar outra linha após a correção
 
-**Teste:** escolher linha/ponto, abrir Ver horários, voltar e escolher outro endereço.
-**Esperado:** identificação clara, todos os horários do calendário/data e retorno à mesma linha sem /start.
-**Por que humano:** API é simulada nos testes; renderização, entrega e clareza no aplicativo não foram observadas.
+**Teste:** tocar Buscar outra linha na lista de pontos, na consulta e em Ver horários, selecionar outra linha; depois conferir Voltar.
+**Esperado:** busca inline no chat atual, escolha de outra linha sem /start e Voltar preservando os pontos da linha atual.
+**Por que humano:** os testes provam propriedades do botão e montagem do teclado; a interação do cliente externo exige observação. Teste 3 do UAT está pendente.
 
 ### 2. Páginas no Telegram real
 
@@ -138,8 +148,33 @@ Nenhum marcador de dívida TBD/FIXME/XXX sem referência encontrado em produçã
 **Esperado:** mensagens aceitas, identificação e controles preservados, sem perda perceptível de horários.
 **Por que humano:** o cálculo e conservação foram testados; a experiência do cliente externo requer observação.
 
+**Estado do UAT:** bloqueado; o usuário observou apenas Página 1/1. Não é evidência de defeito nem aprovação da navegação multipágina.
+
 ## Registro final
 
-O código do plano 02-02 foi registrado no commit `5fd45d7`, com resumo concluído. O fingerprint acima foi recomputado pela CLI após essa atualização de metadados; nenhuma alteração de produção ocorreu desde a verificação comportamental. Os dois testes humanos estão registrados em `02-UAT.md`.
+O código do plano 02-02 foi registrado no commit `5fd45d7`; o fechamento G-02-2 está no commit `4a9fda2`, com resumo concluído. O fingerprint foi recomputado pela CLI incluindo os três planos/resumos. O UAT preserva o relato histórico do teste 1, registra G-02-2 resolvido pelo plano 02-03 e adiciona o teste 3 humano pendente.
+
+O usuário confirmou que a linha 004 opera somente em dias úteis; a indisponibilidade em domingo/feriado corresponde ao calendário publicado e não é tratada como falha. A clareza das mensagens e Página 1/1 estão previstas na fase 6.
 
 Nenhuma lacuna funcional bloqueante encontrada; a fase permanece aguardando os dois testes humanos acima.
+
+## Reverificação incremental 02-03 — evidência executada
+
+Leitura direta confirmou o helper com consulta vazia, sem callback novo, em `criar_artigo`, `_teclado_consulta` e no teclado de cada página. `_voltar` reutiliza `criar_artigo`. `build_application` registra `InlineQueryHandler(inline_query)`, cuja leitura SQLite via `_artigos` produz sugestões reais; não há lista estática substituindo os dados.
+
+Comando executado: `.venv/Scripts/python.exe -c` carregando pelo nome os quatro testes abaixo com `unittest.defaultTestLoader.loadTestsFromNames`. **4 testes, 0.208s, exit 0.** A suíte completa não foi repetida nesta reverificação.
+
+| Teste | Resultado |
+|---|---|
+| test_buscar_outra_linha_em_pontos_consultas_e_retorno | PASS — botão único, consulta inline vazia, sem callback em pontos, consulta, indisponibilidade, encerramento e retorno |
+| test_lista_extensa_pagina_sem_perdas | PASS — 1440 horários conservados, até 4096 caracteres, Busca e Voltar em todas as páginas |
+| test_voltar_reconstroi_enderecos_e_permite_outro_ponto | PASS — troca de ponto da mesma linha preservada |
+| test_consulta_mantem_snapshot_durante_publicacao | PASS — revisão/endereço/horários consistentes sob publicação intercalada |
+
+`verify.artifacts` do plano 02-03 retornou 2/2. `verify.key-links` retornou 0/1 pela heurística de path literal; o vínculo real é o import `buscar_sugestoes` de `onibus.search`, usado em `_artigos` pelo handler inline registrado. Essa ligação foi conferida diretamente; o resultado heurístico não foi contado como prova de falha.
+
+Decision coverage executada novamente: honored 7/total 7; nenhum item não honrado. Scan de dívida e testes desabilitados nos arquivos de produção/testes verificados: nenhum marcador encontrado. O novo teste usa expectativas explícitas do contrato (`""`, ausência de callback, presença única e fluxo multietapas), sem gerar expected values pela implementação.
+
+### Advisory (New Scope, Unevidenced)
+
+Nenhum achado adicional. Não foram alterados produção, banco, UAT, STATE ou ROADMAP nesta reverificação.

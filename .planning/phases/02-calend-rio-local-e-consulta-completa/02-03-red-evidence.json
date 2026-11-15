@@ -1,0 +1,14 @@
+{
+  "plan": "02-03",
+  "command": ".venv/Scripts/python.exe -m unittest discover -s tests -p test_telegram_handlers.py -v",
+  "exit_code": 1,
+  "tests": 17,
+  "passed": 15,
+  "failures": 2,
+  "failed_tests": [
+    "test_buscar_outra_linha_em_pontos_consultas_e_retorno",
+    "test_lista_extensa_pagina_sem_perdas"
+  ],
+  "observed_assertion": "AssertionError: 0 != 1 (nenhum botão Buscar outra linha)",
+  "note": "Execução RED observada antes da alteração em produção. Sem commit RED, conforme instrução do orquestrador para evitar espera de aprovação Git."
+}

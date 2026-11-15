@@ -1,5 +1,5 @@
 ---
-status: diagnosed
+status: testing
 phase: 02-calend-rio-local-e-consulta-completa
 source: [02-VERIFICATION.md]
 started: 2026-11-15
@@ -8,7 +8,13 @@ updated: 2026-11-15
 
 ## Current Test
 
-[testing paused — paginação real sem dados suficientes; ajustes diagnosticados]
+number: 3
+name: Buscar outra linha após a correção
+expected: |
+  Escolha uma linha e um ponto. Toque em Buscar outra linha.
+  A busca inline deve abrir no chat atual e permitir escolher outra linha sem /start.
+  Confira também o botão na lista de pontos e em Ver horários; Voltar mantém a linha atual.
+awaiting: user response
 
 ## Tests
 
@@ -25,12 +31,16 @@ result: blocked
 blocked_by: prior-phase
 reason: "Usuário: Não. Porém aparece um principio de paginação (\"Página 1/1\"). As listas observadas couberam em uma página; navegação Próxima/Anterior não exercitada. Não é uma falha comprovada de paginação."
 
+### 3. Buscar outra linha após a correção
+expected: Buscar outra linha abre a busca inline no chat atual na lista de pontos, próximas saídas e Ver horários; permite escolher outra linha sem /start, preservando Voltar aos pontos.
+result: [pending]
+
 ## Summary
 
-total: 2
+total: 3
 passed: 0
 issues: 1
-pending: 0
+pending: 1
 skipped: 0
 blocked: 1
 
@@ -38,7 +48,9 @@ blocked: 1
 
 - gap_id: G-02-2
   truth: "O passageiro consegue retornar à seleção de linha pela navegação do bot."
-  status: failed
+  status: resolved
+  resolved_by: 02-03-PLAN.md
+  resolved_at: 2026-11-15
   reason: "Usuário informou que Voltar só permite selecionar outro ponto, sem botão para escolher outra linha. Ampliação solicitada do comportamento D-06, que originalmente previa retornar apenas aos pontos."
   severity: minor
   test: 1

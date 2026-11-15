@@ -2,14 +2,12 @@
 phase: 02-calend-rio-local-e-consulta-completa
 reviewed: 2026-11-15
 depth: standard
-files_reviewed: 6
+files_reviewed: 2
 files_reviewed_list:
-  - onibus/holidays.py
-  - onibus/core.py
   - onibus/telegram_handlers.py
-  - tests/test_schedules.py
   - tests/test_telegram_handlers.py
-  - README.md
+incremental_plan: "02-03"
+historical_scope: "A revisão inicial cobriu holidays.py, core.py, telegram_handlers.py, test_schedules.py, test_telegram_handlers.py e README.md; achados resolvidos preservados abaixo."
 findings:
   critical: 0
   warning: 0
@@ -28,6 +26,16 @@ status: clean
 Revisão standard da árvore atual e reavaliação das correções: **zero findings abertos, três resolvidos**. A transação explícita mantém revisão e horários no mesmo snapshot; callbacks inválidos recebem uma única resposta explicativa; o orçamento de paginação usa o cabeçalho e rótulo reais. Os 16 testes dos handlers passaram nesta reavaliação, incluindo as quatro regressões adicionadas para os achados. Não foram encontradas regressões significativas nas correções. Os achados originais abaixo permanecem como histórico, todos encerrados.
 
 ## Narrative Findings (AI reviewer)
+
+### Revisão incremental do plano 02-03
+
+Nenhum novo achado comprovado no diff de `onibus/telegram_handlers.py` e `tests/test_telegram_handlers.py`. O helper `_botao_buscar_outra_linha` em `telegram_handlers.py:52` constrói uma ação inline com consulta vazia; os três pontos de construção do teclado a reutilizam, sem acrescentar callback nem estado mutável. `_voltar` reaproveita o artigo, portanto também recebe a ação. O comportamento do parâmetro vazio foi conferido na documentação da biblioteca instalada. A busca continua entrando por `inline_query` e `buscar_sugestoes`, com validações e parâmetros SQL existentes.
+
+Foram executados os 17 testes dos handlers nesta revisão (0.783s, exit 0), incluindo ação única nos pontos, retorno, próximas saídas, indisponibilidade, encerramento e cada página dos 1.440 horários. As asserções conferem consulta vazia e ausência de `callback_data`; o ciclo Voltar e a preservação de data continuam exercitados. Não foram introduzidos novos achados de necessidade.
+
+**T-02-05:** mitigação presente: busca inline existente reutilizada, sem nova entrada de callback nem acesso ao banco. **BOT-04/BOT-05:** cobertura preservada e ampliada pelo teste `test_buscar_outra_linha_em_pontos_consultas_e_retorno` e pelas asserções em `test_lista_extensa_pagina_sem_perdas`. A interação real do cliente Telegram ainda requer confirmação humana; esta revisão não a declara executada.
+
+Os três achados históricos a seguir continuam resolvidos e não representam achados abertos do plano 02-03.
 
 ## Critical Issues
 

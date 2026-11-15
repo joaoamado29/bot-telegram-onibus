@@ -4,16 +4,16 @@ current_phase: 02
 current_phase_name: Calendário local e consulta completa
 status: verifying
 stopped_at: Phase 02 plans complete; awaiting Telegram UAT
-last_updated: "2026-11-15T13:40:59.394Z"
+last_updated: "2026-11-15T16:43:13.209Z"
 last_activity: 2026-11-15
-last_activity_desc: Phase 02 implemented; 64 tests passed; Telegram UAT pending
-state_head: ac0471efd09e8e8bc0f1d10b221e6d8871361b30
+last_activity_desc: Gap 02-03 implemented; 65 tests passed; Telegram UAT pending
+state_head: 83a5494c2d30a373a7b71e9dde8bd75a3b0f3c8a
 progress:
   total_phases: 6
   completed_phases: 1
-  total_plans: 6
-  completed_plans: 6
-  percent: 20
+  total_plans: 7
+  completed_plans: 7
+  percent: 17
 ---
 
 # Project State
@@ -23,21 +23,21 @@ progress:
 See: .planning/PROJECT.md (updated 2026-11-13)
 
 **Core value:** Permitir consultar os próximos horários do ponto escolhido e receber avisos antes da saída, conforme Brasília e o calendário de operação.
-**Current focus:** Fase 02 implementada; validar dois cenários no Telegram antes de concluir a fase.
+**Current focus:** Fase 02 — correção Buscar outra linha implementada; validar no Telegram.
 
 ## Current Position
 
 Phase: 02 (Calendário local e consulta completa) — AWAITING UAT
-Plan: 2 of 2 concluídos (02-01 e 02-02)
-Status: human_needed — implementação verificada, teste real no Telegram pendente
-Last activity: 2026-11-15 — 64 testes verdes, revisão clean e segurança sem ameaças abertas.
+Plan: 3 of 3 concluídos
+Status: human_needed — Buscar outra linha pronto para reteste
+Last activity: 2026-11-15 — 65 testes verdes, revisão sem novos achados, commit 4a9fda2.
 
-Progress: [██░░░░░░░░] 20%
+Progress: [██░░░░░░░░] 17%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 6
+- Total plans completed: 7
 - Average duration: 29 min
 - Total execution time: 1.9 horas
 
@@ -73,7 +73,7 @@ Nenhum item adicional capturado.
 
 ### Blockers/Concerns
 
-- Phase 2: dois testes reais no Telegram pendentes em 02-UAT.md; não avançar antes da validação.
+- Phase 2: reteste Buscar outra linha pendente; paginação real bloqueada pela ausência de listas com várias páginas no UAT. Não avançar antes da validação.
 - Catálogo de feriados exige revisão anual das fontes oficiais.
 - Phase 4: definir validação da antecedência e ativação tardia; hospedagem/disponibilidade do processo influenciam entrega dos avisos.
 
@@ -85,8 +85,8 @@ Nenhum item adicional capturado.
 
 ## Session Continuity
 
-Last session: 2026-11-15T15:11:47+00:00
-Stopped at: Phase 02 implemented; 64 tests pass; review clean; human_needed with 2 Telegram UAT items.
+Last session: 2026-11-15T16:50:07+00:00
+Stopped at: Gap plan 02-03 complete (4a9fda2); 65 tests green; human_needed.
 Resume file: .planning/phases/02-calend-rio-local-e-consulta-completa/02-UAT.md
 
-Next command: $gsd-verify-work 2. Both plans summarized; code commit 5fd45d7. Preserve prior user changes in bot.py and onibus/refresh.py. Phase 02 remains pending UAT; do not advance to phase 03 yet.
+Next: $gsd-verify-work 2, test 3 (Buscar outra linha). G-02-2 reconciled by 02-03-PLAN.md + SUMMARY. Real multipage test remains blocked; no false pass. Line004 confirmed weekdays only by user. Preserve prior bot.py/onibus/refresh.py edits and phase06 roadmap.
