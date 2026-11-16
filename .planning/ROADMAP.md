@@ -61,7 +61,7 @@ Escopo incremental: a consulta inicial reconhece os tipos de dia publicados e o 
 A fonte verificável e a manutenção dos feriados serão definidas no planejamento desta fase. Não presumir que ponto facultativo seja feriado nem inventar calendário ausente na origem.
 
 ### Phase 3: Consulta do dia seguinte
-**Goal:** Quando as saídas de hoje acabam, o passageiro consegue consultar os horários de amanhã, com a data e o calendário corretos.
+**Goal:** As a passageiro, I want to consultar os horários de amanhã quando as saídas de hoje acabam, so that eu possa planejar a próxima viagem com a data e o calendário corretos.
 **Mode:** mvp
 **Depends on:** Phase 2.
 **Requirements:** TIME-05, BOT-06
@@ -69,7 +69,8 @@ A fonte verificável e a manutenção dos feriados serão definidas no planejame
 1. Quando um ponto não tem mais saídas hoje, o usuário recebe aviso de que os horários de hoje terminaram e a opção Ver horários de amanhã.
 2. Ao selecionar amanhã, o usuário recebe os horários daquela data, inclusive na passagem de sexta para sábado, de sábado para domingo e na véspera de um feriado abrangido pelo calendário.
 3. A resposta identifica amanhã como outra data e não completa as próximas saídas de hoje com horários do dia seguinte; calendário indisponível continua sendo informado como indisponível.
-**Plans:** TBD
+**Plans:** 0/1 plans executed
+- [ ] 03-01-PLAN.md — Consultar os horários de amanhã pelo Telegram
 **UI hint:** yes
 
 ### Phase 4: Alertas da viagem escolhida
