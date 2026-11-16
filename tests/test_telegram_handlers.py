@@ -1,10 +1,11 @@
 from __future__ import annotations
 
+import json
 import tempfile
 import re
 import unittest
 from contextlib import closing
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import AsyncMock, patch
@@ -81,6 +82,89 @@ class TelegramHandlersTests(unittest.IsolatedAsyncioTestCase):
         self.assertIn("14/11/2026", texto)
         self.assertIn("Sábados", texto)
         self.assertEqual(re.findall(r"\b\d{2}:\d{2}\b", texto), ["07:00", "14:00"])
+
+    def _dados_botao(self, resposta, rotulo: str) -> str:
+        return next(
+            b.callback_data for row in resposta["reply_markup"].inline_keyboard for b in row
+            if b.text == rotulo
+        )
+
+    async def test_amanha_usa_calendario_de_domingo_ou_feriado(self) -> None:
+        with closing(conectar(self.db_path)) as conn, conn:
+            conn.executemany(
+                """INSERT INTO horarios
+                (numero, nome, calendario, horario_ponto1, horario_ponto2)
+                VALUES (11, 'Circular Centro', ?, ?, ?)""",
+                [
+                    ("sabados", '["07:00"]', '["08:00"]'),
+                    ("domingos_feriados", '["09:00"]', '["00:00","10:00"]'),
+                ],
+            )
+        for agora, dia, feriado in (
+            (datetime(2026, 11, 8, 1, tzinfo=timezone.utc), "08/11/2026", None),
+            (datetime(2026, 3, 25, 1, tzinfo=timezone.utc), "25/03/2026", "Data Magna do Ceará"),
+        ):
+            with self.subTest(dia=dia):
+                self.context.bot_data["clock"] = lambda: agora
+                selecao = await self._clique("p:11:1:2")
+                resposta = selecao.edit_message_text.call_args.kwargs
+                self.assertIn("a partir de 00:00 de amanhã.", resposta["text"])
+                lista = await self._clique(self._dados_botao(resposta, "Ver horários de amanhã"))
+                texto = lista.edit_message_text.call_args.kwargs["text"]
+                self.assertIn(dia, texto)
+                self.assertIn("Terminal B", texto)
+                self.assertIn("Domingos e feriados", texto)
+                if feriado:
+                    self.assertIn(feriado, texto)
+                self.assertEqual(re.findall(r"\b\d{2}:\d{2}\b", texto), ["00:00", "10:00"])
+
+    async def test_lista_de_amanha_preserva_data_e_pagina_apos_meia_noite(self) -> None:
+        horarios = tuple(f"06:{minuto:02d}" for minuto in range(30))
+        with closing(conectar(self.db_path)) as conn, conn:
+            conn.execute(
+                """INSERT INTO horarios
+                (numero, nome, calendario, horario_ponto1, horario_ponto2)
+                VALUES (?, ?, ?, ?, ?)""",
+                (11, "Circular Centro", "sabados", json.dumps(horarios), '["07:30"]'),
+            )
+        self.context.bot_data["clock"] = lambda: datetime(2026, 11, 13, 23, tzinfo=BRT)
+        selecao = await self._clique("p:11:1:1")
+        dados = self._dados_botao(selecao.edit_message_text.call_args.kwargs, "Ver horários de amanhã")
+        self.context.bot_data["clock"] = lambda: datetime(2026, 11, 14, 1, tzinfo=BRT)
+        lista = await self._clique(dados)
+        primeira = lista.edit_message_text.call_args.kwargs
+        proxima = await self._clique(self._dados_botao(primeira, "Próxima"))
+        segunda = proxima.edit_message_text.call_args.kwargs
+        for resposta, esperados in ((primeira, horarios[:28]), (segunda, horarios[28:])):
+            self.assertIn("14/11/2026", resposta["text"])
+            self.assertEqual(re.findall(r"\b\d{2}:\d{2}\b", resposta["text"]), list(esperados))
+        retorno = await self._clique(self._dados_botao(segunda, "Voltar"))
+        texto = retorno.edit_message_text.call_args.kwargs["text"]
+        self.assertIn("011 - Circular Centro", texto)
+        self.assertIn("Terminal A", texto)
+        self.assertIn("Terminal B", texto)
+
+    async def test_amanha_indisponivel_so_e_oferecido_quando_hoje_encerra(self) -> None:
+        for agora, aviso in (
+            (datetime(2026, 11, 13, 9, tzinfo=BRT), "Próximas saídas"),
+            (datetime(2026, 11, 14, 9, tzinfo=BRT), "Horários indisponíveis"),
+        ):
+            self.context.bot_data["clock"] = lambda: agora
+            callback = await self._clique("p:11:1:1")
+            resposta = callback.edit_message_text.call_args.kwargs
+            self.assertIn(aviso, resposta["text"])
+            botoes = [b.text for row in resposta["reply_markup"].inline_keyboard for b in row]
+            self.assertNotIn("Ver horários de amanhã", botoes)
+        self.context.bot_data["clock"] = lambda: datetime(2026, 11, 13, 23, tzinfo=BRT)
+        callback = await self._clique("p:11:1:1")
+        resposta = callback.edit_message_text.call_args.kwargs
+        self.assertIn("Os horários de hoje terminaram.", resposta["text"])
+        self.assertIn("Horários de amanhã indisponíveis", resposta["text"])
+        self.assertNotIn("a partir de", resposta["text"])
+        lista = await self._clique(self._dados_botao(resposta, "Ver horários de amanhã"))
+        texto = lista.edit_message_text.call_args.kwargs["text"]
+        self.assertIn("14/11/2026", texto)
+        self.assertIn("Horários indisponíveis", texto)
 
     async def test_buscar_outra_linha_em_pontos_consultas_e_retorno(self) -> None:
         query = SimpleNamespace(query="11", offset="", answer=AsyncMock())
