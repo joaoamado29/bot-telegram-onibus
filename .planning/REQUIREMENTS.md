@@ -34,9 +34,9 @@
 
 ### Alertas
 
-- [ ] **ALERT-01**: O usuário pode escolher uma saída apresentada e informar a antecedência em minutos para receber alertas daquela viagem.
+- [ ] **ALERT-01**: O usuário pode escolher uma saída apresentada e ativar um alerta para aquela viagem. Se já houver alerta ativo, pode confirmar sua substituição.
 - [ ] **ALERT-02**: O usuário recebe o primeiro alerta na antecedência escolhida e os seguintes a cada cinco minutos enquanto a saída for futura, no formato `Faltam {minutos_faltantes} para o onibus!`.
-- [ ] **ALERT-03**: Antecedências não múltiplas de cinco são aceitas; para uma escolha de 12 minutos, os avisos ocorrem faltando 12, 7 e 2 minutos.
+- [ ] **ALERT-03**: O bot apresenta os atalhos de 10, 15, 20 e 30 minutos cujo primeiro aviso ainda cabe. Se nenhum couber e a saída for futura, informa que está em cima da hora e oferece somente o aviso no horário da saída.
 - [ ] **ALERT-04**: No horário da saída, o usuário recebe `Está no horário do ônibus!` e os alertas daquela viagem são encerrados.
 - [ ] **ALERT-05**: Após reinício do bot, alertas futuros persistidos são recuperados e avisos cujo horário passou são ignorados.
 - [ ] **ALERT-06**: O usuário pode cancelar o acompanhamento de uma viagem por um botão, impedindo os próximos avisos desse alerta.
@@ -96,7 +96,7 @@ Nenhum requisito adicional comprometido. Favoritos, recorrência diária e outra
 - Consulta às 11h de uma data de serviço seleciona o calendário correspondente e retorna até três horários futuros daquele ponto no mesmo dia.
 - Consulta sem mais saídas avisa o término do dia e oferece amanhã; falta de calendário não é apresentada como término das saídas.
 - Para saída às 12h e antecedência de 10 minutos, avisos às 11h50 e 11h55 precedem a mensagem final às 12h.
-- Para saída às 12h e antecedência de 12 minutos, avisos às 11h48, 11h53 e 11h58 precedem a mensagem final às 12h.
+- Para saída às 12h consultada às 11h43, aparecem os atalhos de 10 e 15 minutos. Às 11h53, o bot oferece somente o aviso às 12h.
 - Reinício recupera apenas os avisos futuros; cancelamento impede os próximos avisos da viagem cancelada.
 
 ---

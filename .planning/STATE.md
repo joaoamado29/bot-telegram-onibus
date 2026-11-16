@@ -60,7 +60,7 @@ Decisões completas em `.planning/PROJECT.md`.
 - Entregas funcionais em modo MVP, fases padrão e planos independentes em paralelo; fluxo interativo.
 - Duas tabelas relacionadas com listas independentes por ponto/calendário; as duas primeiras coleções são obrigatórias.
 - Calendário automático inclui feriados nacionais, do Ceará e de Fortaleza.
-- Antecedência livre, contagens a cada cinco minutos e mensagem final; exemplo de 12 minutos: 12, 7, 2 e saída.
+- Atalhos de 10, 15, 20 e 30 minutos conforme o tempo disponível, contagens a cada cinco minutos e mensagem final. Um alerta por passageiro, com substituição explícita.
 - Alertas futuros devem ser recuperados após reinício; avisos vencidos são ignorados e o usuário pode cancelar.
 
 ### Pending Todos
@@ -75,7 +75,7 @@ Nenhum item adicional capturado.
 
 - Phase 2: UAT e verificação técnica aprovados; nenhum bloqueio funcional. README contém deriva documental registrada em WR-05.
 - Catálogo de feriados exige revisão anual das fontes oficiais.
-- Phase 4: definir validação da antecedência e ativação tardia; hospedagem/disponibilidade do processo influenciam entrega dos avisos.
+- Fase 4: a disponibilidade do processo influencia a entrega dos avisos. A recuperação após reinício está na Fase 5.
 
 ## Deferred Items
 

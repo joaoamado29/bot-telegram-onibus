@@ -74,20 +74,21 @@ A fonte verificável e a manutenção dos feriados serão definidas no planejame
 **UI hint:** yes
 
 ### Phase 4: Alertas da viagem escolhida
-**Goal:** O passageiro escolhe uma saída e recebe avisos com a antecedência desejada, a cada cinco minutos, até a mensagem final daquela viagem.
+**Goal:** As a passageiro, I want to escolher uma saída e ativar alertas pelo Telegram, so that eu saiba quando a saída estiver se aproximando ou tiver chegado.
 **Mode:** mvp
 **Depends on:** Phase 3.
 **Requirements:** BOT-03, BOT-07, ALERT-01, ALERT-02, ALERT-03, ALERT-04
 **Success Criteria:**
-1. Após escolher o endereço, o usuário recebe próximas saídas e as opções Notificar, Ver horários e Voltar; em Notificar, escolhe uma saída apresentada e informa a antecedência em minutos.
+1. Após escolher o endereço, o usuário recebe próximas saídas e as opções Notificar, Ver horários e Voltar. Em Notificar, escolhe uma saída apresentada e um atalho disponível.
 2. Para saída às 12h e antecedência de 10 minutos, o usuário recebe `Faltam 10 para o onibus!` às 11h50 e `Faltam 5 para o onibus!` às 11h55, no formato aprovado `Faltam {minutos_faltantes} para o onibus!`.
-3. Para saída às 12h e antecedência de 12 minutos, o usuário recebe contagens de 12, 7 e 2 minutos às 11h48, 11h53 e 11h58, respectivamente.
+3. O bot oferece os atalhos de 10, 15, 20 e 30 minutos que ainda cabem. Se faltarem menos de 10 minutos e a saída for futura, avisa que está em cima da hora e oferece somente o aviso final.
 4. Às 12h, o usuário recebe `Está no horário do ônibus!`; nenhuma nova contagem é enviada para a viagem encerrada.
 5. Dois usuários escolhem linhas, pontos e saídas diferentes sem alterar as escolhas nem os alertas um do outro; navegar após agendar não muda a viagem acompanhada.
+6. Cada passageiro acompanha uma viagem por vez e pode confirmar a substituição do alerta ativo.
 **Plans:** TBD
 **UI hint:** yes
 
-Definir no planejamento a validação de minutos e a ativação quando o primeiro instante solicitado já tiver passado, preservando a antecedência livre aprovada. Esta fase verifica o fluxo com o processo em funcionamento; a recuperação de reinícios é entregue na Phase 5.
+Esta fase verifica o fluxo com o processo em funcionamento. A recuperação após reinícios é entregue na Fase 5.
 
 ### Phase 5: Continuidade e cancelamento dos alertas
 **Goal:** O passageiro mantém o acompanhamento de viagens futuras após reinício do bot e pode interrompê-lo por um botão.

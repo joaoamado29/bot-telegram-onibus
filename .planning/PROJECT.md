@@ -26,7 +26,7 @@ Permitir que o passageiro encontre os próximos horários do ponto escolhido e r
 - [ ] Mostrar os próximos três horários do ponto selecionado com base no horário de Brasília e no calendário correspondente ao dia.
 - [ ] Selecionar automaticamente horários de dias úteis, sábados e domingos/feriados.
 - [ ] Disponibilizar opções de notificar, ver todos os horários do endereço e voltar à escolha do endereço.
-- [ ] Permitir escolher uma saída e a antecedência em minutos para notificações.
+- [ ] Permitir escolher uma saída e um atalho disponível de antecedência, com um alerta ativo por passageiro e opção de substituição.
 - [ ] Enviar alertas a cada cinco minutos a partir da antecedência escolhida: "Faltam {minutos_faltantes} para o onibus!".
 - [ ] Enviar "Está no horário do ônibus!" no horário da saída e encerrar os alertas daquela viagem.
 - [ ] Avisar quando os horários de hoje terminarem e oferecer consulta dos horários do dia seguinte.
@@ -48,7 +48,7 @@ Permitir que o passageiro encontre os próximos horários do ponto escolhido e r
 - Cada coluna `horario_pontoN` guarda uma coleção independente de horários por calendário; não alinhar horários de pontos diferentes pelo índice. As coleções dos pontos 1 e 2 são obrigatórias.
 - Considerar feriados nacionais, estaduais do Ceará e municipais de Fortaleza; a fonte verificável do calendário será definida no planejamento.
 - Mostrar uma ou duas saídas quando não houver três disponíveis, sem completar a lista com outro dia.
-- Antecedência livre: para 12 minutos, alertar faltando 12, 7 e 2 minutos e enviar mensagem final na saída.
+- Atalhos de 10, 15, 20 e 30 minutos conforme o tempo disponível. Se nenhum couber, oferecer aviso no horário da saída.
 - Persistir alertas futuros para recuperar após reinício, pular avisos vencidos e oferecer cancelamento.
 - Ainda precisam ser definidos no planejamento: identidade/cardinalidade das tabelas, fonte verificável de feriados e tratamento de páginas que não atendem à obrigatoriedade das duas primeiras coleções.
 - Exemplo confirmado: saída às 12h e antecedência de 10 minutos gera avisos às 11h50 e 11h55 e mensagem final às 12h.
@@ -74,7 +74,8 @@ Permitir que o passageiro encontre os próximos horários do ponto escolhido e r
 | Coleções independentes por ponto e calendário | Páginas reais possuem quantidades diferentes por ponto | Confirmado |
 | Feriados nacionais, Ceará e Fortaleza | Calendário automático correspondente à operação local | Confirmado |
 | Mostrar menos de três saídas quando necessário | Preservar a data consultada sem inventar horários | Confirmado |
-| Antecedência livre e contagem a cada cinco minutos | Para 12 minutos: avisos em 12, 7, 2 e mensagem final | Confirmado |
+| Atalhos de antecedência e contagem a cada cinco minutos | 10, 15, 20 e 30 minutos conforme o tempo disponível | Confirmado |
+| Um alerta ativo por passageiro | O passageiro pode confirmar a substituição de uma viagem acompanhada | Confirmado |
 | Recuperar alertas futuros e descartar avisos vencidos | Manter o acompanhamento após reinício sem inundar o usuário | Confirmado |
 | Cancelamento de alertas | Permitir interromper o acompanhamento da viagem | Confirmado |
 
