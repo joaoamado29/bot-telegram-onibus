@@ -1,8 +1,8 @@
 ---
 phase: "03"
 slug: consulta-do-dia-seguinte
-status: draft
-nyquist_compliant: false
+status: complete
+nyquist_compliant: true
 wave_0_complete: true
 created: "2026-11-16"
 ---
@@ -24,8 +24,8 @@ Execute o comando rápido após a tarefa 1. Execute a suíte completa após a ta
 
 | Tarefa | Onda | Requisito | Referência | Comando | Estado |
 |--------|------|-----------|------------|---------|--------|
-| 03-01-01 | 1 | BOT-06, TIME-05 | T-03-01, T-03-02 | Rápido | Pendente. O fluxo de sexta a sábado abre a lista pelo botão emitido. |
-| 03-01-02 | 1 | TIME-05, BOT-06 | T-03-01, T-03-02 | Suíte completa | Pendente. Confere mudanças de calendário, 00:00, data fixa, indisponibilidade, páginas e retorno. |
+| 03-01-01 | 1 | BOT-06, TIME-05 | T-03-01, T-03-02 | Rápido | 18 testes aprovados no commit `50f543f`. |
+| 03-01-02 | 1 | TIME-05, BOT-06 | T-03-01, T-03-02 | Suíte completa | 69 testes aprovados no commit `9566860`. |
 
 ## Aceite no Telegram
 
@@ -33,5 +33,5 @@ Confirme a apresentação do aviso e dos botões em uma conversa real. A automa�
 
 ## Conclusão
 
-- [ ] Registrar evidência do comando rápido e da suíte completa.
-- [ ] Marcar a validação como concluída após a evidência dos requisitos.
+- [x] Registrar evidência do comando rápido e da suíte completa.
+- [x] Confirmar a cobertura automatizada dos requisitos.

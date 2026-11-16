@@ -69,8 +69,8 @@ A fonte verificável e a manutenção dos feriados serão definidas no planejame
 1. Quando um ponto não tem mais saídas hoje, o usuário recebe aviso de que os horários de hoje terminaram e a opção Ver horários de amanhã.
 2. Ao selecionar amanhã, o usuário recebe os horários daquela data, inclusive na passagem de sexta para sábado, de sábado para domingo e na véspera de um feriado abrangido pelo calendário.
 3. A resposta identifica amanhã como outra data e não completa as próximas saídas de hoje com horários do dia seguinte; calendário indisponível continua sendo informado como indisponível.
-**Plans:** 0/1 plans executed
-- [ ] 03-01-PLAN.md — Consultar os horários de amanhã pelo Telegram
+**Plans:** 1/1 plans executed
+- [x] 03-01-PLAN.md — Consultar os horários de amanhã pelo Telegram
 **UI hint:** yes
 
 ### Phase 4: Alertas da viagem escolhida
@@ -109,7 +109,7 @@ Definir no planejamento a validação de minutos e a ativação quando o primeir
 |-------|----------------|--------|-----------|
 | 1. Primeiras consultas no Telegram | 0/4 | Planned     | - |
 | 2. Calendário local e consulta completa | 3/3 | In Progress | - |
-| 3. Consulta do dia seguinte | 0/TBD | Not started | - |
+| 3. Consulta do dia seguinte | 1/1 | Aguardando aceite no Telegram | - |
 | 4. Alertas da viagem escolhida | 0/TBD | Not started | - |
 | 5. Continuidade e cancelamento dos alertas | 0/TBD | Not started | - |
 | 6. Melhorar clareza das respostas do bot | 0/TBD | Not started | - |
