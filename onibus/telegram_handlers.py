@@ -3,7 +3,7 @@ from __future__ import annotations
 import asyncio
 import re
 from contextlib import closing
-from datetime import datetime
+from datetime import datetime, time, timedelta
 from pathlib import Path
 
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, InlineQueryResultArticle, InputTextMessageContent, Update
@@ -108,7 +108,7 @@ async def inline_query(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     await query.answer(results=artigos, next_offset=next_offset, cache_time=30, is_personal=True)
 
 
-def formato_saidas(consulta: ConsultaSaidas) -> str:
+def formato_saidas(consulta: ConsultaSaidas, amanha: ConsultaSaidas | None = None) -> str:
     """
     O que faz: Formata a resposta com o número e nome da linha na primeira linha do cabeçalho,
     seguido do endereço do ponto, data e as próximas saídas no padrão de Brasília.
@@ -122,12 +122,27 @@ def formato_saidas(consulta: ConsultaSaidas) -> str:
     if consulta.status == "indisponivel":
         return cabecalho + "\nHorários indisponíveis para este ponto e calendário."
     if consulta.status == "encerrado":
+        if amanha and amanha.todos_horarios:
+            return (
+                cabecalho
+                + f"\nAs linhas do onibus {consulta.numero:03d} - {consulta.nome} estão encerradas no dia de hoje. "
+                + f"Elas voltam a circular a partir de {amanha.todos_horarios[0]} de amanhã."
+            )
+        if amanha:
+            return cabecalho + "\nOs horários de hoje terminaram.\nHorários de amanhã indisponíveis para este ponto e calendário."
         return cabecalho + "\nOs horários de hoje terminaram."
     return cabecalho + "\nPróximas saídas:\n" + "\n".join(consulta.horarios)
 
 
-def _teclado_consulta(numero: int, revisao: int, posicao: int, consulta: ConsultaSaidas) -> InlineKeyboardMarkup:
-    return InlineKeyboardMarkup([
+def _teclado_consulta(
+    numero: int, revisao: int, posicao: int, consulta: ConsultaSaidas, amanha: ConsultaSaidas | None = None
+) -> InlineKeyboardMarkup:
+    teclado = []
+    if amanha:
+        teclado.append([InlineKeyboardButton(
+            "Ver horários de amanhã", callback_data=f"h:{numero}:{revisao}:{posicao}:{amanha.data:%Y%m%d}:0"
+        )])
+    return InlineKeyboardMarkup(teclado + [
         [InlineKeyboardButton("Ver horários", callback_data=f"h:{numero}:{revisao}:{posicao}:{consulta.data:%Y%m%d}:0")],
         [InlineKeyboardButton("Voltar", callback_data=f"b:{numero}:{revisao}")],
         [_botao_buscar_outra_linha()],
@@ -181,21 +196,34 @@ def _voltar(db_path: str | Path, numero: int, revisao: int) -> tuple[str, Inline
 
 
 def _consultar(db_path: str | Path, numero: int, revisao: int, posicao: int, agora: datetime) -> ConsultaSaidas | None:
+    consulta, _ = _consultar_datas(db_path, numero, revisao, posicao, agora, incluir_amanha=False)
+    return consulta
+
+
+def _consultar_datas(
+    db_path: str | Path, numero: int, revisao: int, posicao: int, agora: datetime, *, incluir_amanha: bool
+) -> tuple[ConsultaSaidas | None, ConsultaSaidas | None]:
     """
     O que faz: Valida a revisão dos dados e obtém as próximas saídas para o ponto selecionado.
     Por que foi feito assim: Se a linha foi atualizada e a revisão mudou, retorna None para
     que o usuário seja orientado a refazer a busca, evitando exibir dados obsoletos.
+    A consulta de amanhã usa a mesma revisão e a mesma transação.
     """
     if posicao not in range(1, 6):
-        return None
+        return None, None
     with closing(conectar(db_path)) as conn:
         # SELECT isolado não mantém snapshot no sqlite3; fixamos a revisão
         # e suas listas na mesma transação até a conexão ser fechada.
         conn.execute("BEGIN")
         pontos = carregar_pontos(conn, numero)
         if pontos is None or pontos["revisao"] != revisao or not pontos[f"ponto{posicao}"]:
-            return None
-        return proximas_saidas(conn, numero, posicao, agora)
+            return None, None
+        consulta = proximas_saidas(conn, numero, posicao, agora)
+        amanha = None
+        if incluir_amanha and consulta.status == "encerrado":
+            inicio_amanha = datetime.combine(consulta.data + timedelta(days=1), time.min, tzinfo=BRT)
+            amanha = proximas_saidas(conn, numero, posicao, inicio_amanha)
+        return consulta, amanha
 
 
 async def ponto_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -229,10 +257,17 @@ async def ponto_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
             except ValueError:
                 await query.answer("Data inválida. Busque a linha novamente.", show_alert=True)
                 return
-        consulta = await asyncio.to_thread(_consultar, context.bot_data["db_path"], numero, revisao, posicao, agora)
-        texto = formato_saidas(consulta) if consulta else "Esta seleção expirou porque os dados foram atualizados. Busque a linha novamente."
+        db_path = context.bot_data["db_path"]
+        amanha = None
+        if horarios_match:
+            consulta = await asyncio.to_thread(_consultar, db_path, numero, revisao, posicao, agora)
+        else:
+            consulta, amanha = await asyncio.to_thread(
+                _consultar_datas, db_path, numero, revisao, posicao, agora, incluir_amanha=True
+            )
+        texto = formato_saidas(consulta, amanha) if consulta else "Esta seleção expirou porque os dados foram atualizados. Busque a linha novamente."
         if consulta:
-            teclado = _teclado_consulta(numero, revisao, posicao, consulta)
+            teclado = _teclado_consulta(numero, revisao, posicao, consulta, amanha)
             if horarios_match:
                 try:
                     paginas = _paginas_horarios(consulta)

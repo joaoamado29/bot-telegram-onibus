@@ -55,6 +55,33 @@ class TelegramHandlersTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(busca[0].switch_inline_query_current_chat, "")
         self.assertIsNone(busca[0].callback_data)
 
+    async def test_fim_da_sexta_abre_horarios_de_sabado(self) -> None:
+        with closing(conectar(self.db_path)) as conn, conn:
+            conn.execute(
+                """INSERT INTO horarios
+                (numero, nome, calendario, horario_ponto1, horario_ponto2)
+                VALUES (?, ?, ?, ?, ?)""",
+                (11, "Circular Centro", "sabados", '["07:00","14:00"]', '["07:30"]'),
+            )
+        self.context.bot_data["clock"] = lambda: datetime(2026, 11, 13, 23, tzinfo=BRT)
+        selecao = await self._clique("p:11:1:1")
+        resposta = selecao.edit_message_text.call_args.kwargs
+        self.assertIn(
+            "As linhas do onibus 011 - Circular Centro estão encerradas no dia de hoje. "
+            "Elas voltam a circular a partir de 07:00 de amanhã.",
+            resposta["text"],
+        )
+        botao = next(
+            b for row in resposta["reply_markup"].inline_keyboard for b in row
+            if b.text == "Ver horários de amanhã"
+        )
+        lista = await self._clique(botao.callback_data)
+        texto = lista.edit_message_text.call_args.kwargs["text"]
+        self.assertIn("Terminal A", texto)
+        self.assertIn("14/11/2026", texto)
+        self.assertIn("Sábados", texto)
+        self.assertEqual(re.findall(r"\b\d{2}:\d{2}\b", texto), ["07:00", "14:00"])
+
     async def test_buscar_outra_linha_em_pontos_consultas_e_retorno(self) -> None:
         query = SimpleNamespace(query="11", offset="", answer=AsyncMock())
         await inline_query(SimpleNamespace(inline_query=query), self.context)
