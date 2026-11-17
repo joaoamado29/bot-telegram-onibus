@@ -68,10 +68,11 @@ class TelegramHandlersTests(unittest.IsolatedAsyncioTestCase):
         selecao = await self._clique("p:11:1:1")
         resposta = selecao.edit_message_text.call_args.kwargs
         self.assertIn(
-            "As linhas do onibus 011 - Circular Centro estão encerradas no dia de hoje. "
-            "Elas voltam a circular a partir de 07:00 de amanhã.",
+            "As saídas de hoje terminaram. A primeira saída de amanhã é às 07:00.",
             resposta["text"],
         )
+        self.assertTrue(resposta["text"].startswith("011 - Circular Centro\n"))
+        self.assertEqual(resposta["text"].count("011 - Circular Centro"), 1)
         botao = next(
             b for row in resposta["reply_markup"].inline_keyboard for b in row
             if b.text == "Ver horários de amanhã"
@@ -108,7 +109,7 @@ class TelegramHandlersTests(unittest.IsolatedAsyncioTestCase):
                 self.context.bot_data["clock"] = lambda: agora
                 selecao = await self._clique("p:11:1:2")
                 resposta = selecao.edit_message_text.call_args.kwargs
-                self.assertIn("a partir de 00:00 de amanhã.", resposta["text"])
+                self.assertIn("A primeira saída de amanhã é às 00:00.", resposta["text"])
                 lista = await self._clique(self._dados_botao(resposta, "Ver horários de amanhã"))
                 texto = lista.edit_message_text.call_args.kwargs["text"]
                 self.assertIn(dia, texto)

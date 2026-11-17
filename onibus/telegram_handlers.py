@@ -125,8 +125,8 @@ def formato_saidas(consulta: ConsultaSaidas, amanha: ConsultaSaidas | None = Non
         if amanha and amanha.todos_horarios:
             return (
                 cabecalho
-                + f"\nAs linhas do onibus {consulta.numero:03d} - {consulta.nome} estão encerradas no dia de hoje. "
-                + f"Elas voltam a circular a partir de {amanha.todos_horarios[0]} de amanhã."
+                + "\nAs saídas de hoje terminaram. "
+                + f"A primeira saída de amanhã é às {amanha.todos_horarios[0]}."
             )
         if amanha:
             return cabecalho + "\nOs horários de hoje terminaram.\nHorários de amanhã indisponíveis para este ponto e calendário."

@@ -12,7 +12,7 @@ Quando acabam as saídas de hoje para o ponto selecionado, o bot oferece a consu
 <decisions>
 ## Decisões
 
-- **D-01.** Quando houver horários publicados para amanhã, usar a mensagem “As linhas do onibus <numero - nome> estão encerradas no dia de hoje. Elas voltam a circular a partir de <horário> de amanhã.” O horário é a primeira saída de amanhã no ponto selecionado, conforme o calendário daquela data.
+- **D-01.** Quando houver horários publicados para amanhã, usar a mensagem “As saídas de hoje terminaram. A primeira saída de amanhã é às <horário>.” O número e o nome da linha aparecem apenas no título. O horário é a primeira saída de amanhã no ponto selecionado, conforme o calendário daquela data.
 - **D-02.** Exibir o botão **Ver horários de amanhã** quando as saídas de hoje terminarem. Se a primeira saída de amanhã estiver indisponível, informar a indisponibilidade em vez de preencher o horário. A falta de dados de hoje recebe o aviso de indisponibilidade já previsto na Fase 2.
 - **D-03.** Mostrar a lista completa de amanhã separadamente, identificando a data e o tipo de dia, com a paginação já usada em **Ver horários**.
 - **D-04.** O botão **Voltar** na lista de amanhã abre a escolha de endereço da mesma linha.

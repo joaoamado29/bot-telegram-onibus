@@ -1,7 +1,7 @@
 ---
 phase: 03-consulta-do-dia-seguinte
 verified: 2026-11-16T20:25:54Z
-status: human_needed
+status: passed
 score: 4/4
 behavior_unverified: 0
 overrides_applied: 0
@@ -14,16 +14,13 @@ covered_files:
   - .planning/phases/03-consulta-do-dia-seguinte/03-01-SUMMARY.md
   - onibus/telegram_handlers.py
   - tests/test_telegram_handlers.py
-covered_digest: "v4:sha256:5311339cdafd4574b31fee09f236754980652fb6ece4139ab4129d1a248d803c"
-human_verification:
-  - test: "No Telegram, selecionar uma linha e um ponto após a última saída do dia, abrir Ver horários de amanhã, avançar se houver mais páginas e tocar em Voltar."
-    expected: "O aviso anuncia a primeira saída publicada para amanhã naquele ponto. A lista mostra a data e o calendário de amanhã. Voltar exibe os endereços da mesma linha."
-    why_human: "Os testes executam o handler com chamadas do Telegram simuladas. A interação no aplicativo ainda precisa de aceite."
+covered_digest: "v4:sha256:91c1147822eec310096c2553dcf0147dfcc2b5b5352bad7282c43380e1992e05"
+human_verification: []
 ---
 
 # Verificação da Fase 3 — Consulta do dia seguinte
 
-O fluxo foi verificado no handler com dados persistidos em SQLite. O aceite no aplicativo Telegram está pendente.
+O fluxo foi verificado no handler com dados persistidos em SQLite e aprovado pelo usuário no Telegram.
 
 ## Cobertura do fluxo
 
@@ -46,4 +43,4 @@ Os dois arquivos de implementação e teste existem e estão conectados pelo han
 
 ## Aceite no Telegram
 
-Após a última saída de um ponto, verifique o aviso no aplicativo e abra **Ver horários de amanhã**. Confira a data, o calendário e a primeira saída. Se houver mais de uma página, navegue pela lista. **Voltar** deve abrir os endereços da mesma linha.
+O usuário confirmou o aviso, a lista de amanhã e o retorno aos endereços. Depois do aceite, pediu que o número e o nome da linha aparecessem apenas no título. O ajuste de texto foi verificado na suíte de 69 testes.
