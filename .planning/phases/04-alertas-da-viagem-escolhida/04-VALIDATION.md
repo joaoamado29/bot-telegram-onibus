@@ -1,8 +1,8 @@
 ---
 phase: "04"
 slug: alertas-da-viagem-escolhida
-status: draft
-nyquist_compliant: false
+status: complete
+nyquist_compliant: true
 wave_0_complete: true
 created: "2026-11-16"
 ---
@@ -20,7 +20,7 @@ Execute o comando rápido após o tracer e a suíte completa após cada expansã
 
 ## Mapa de verificação
 
-| Tarefa | Onda | Requisitos | Ameaças | Comando | Evidência pendente |
+| Tarefa | Onda | Requisitos | Ameaças | Comando | Evidência automatizada |
 |--------|------|------------|---------|---------|-------------------|
 | 04-01-01 | 1 | BOT-03, BOT-07, ALERT-01, ALERT-02, ALERT-04 | T-04-01, T-04-02, T-04-03 | Rápido | Fluxo inline para privado, destino correto, 11h50, 11h55 e 12h. |
 | 04-01-02 | 1 | ALERT-02, ALERT-03, ALERT-04 | T-04-02, T-04-03 | Suíte completa | Elegibilidade com segundos, atalho vencido, todos os intervalos e final avulso. |
@@ -34,5 +34,5 @@ Execute o comando rápido após o tracer e a suíte completa após cada expansã
 
 ## Conclusão
 
-- [ ] Registrar evidência dos testes por tarefa.
+- [x] Registrar evidência dos testes por tarefa. A suíte de handlers passou com 23 testes e a suíte completa com 74 testes após `a555b74`.
 - [ ] Confirmar o aceite no aplicativo.
