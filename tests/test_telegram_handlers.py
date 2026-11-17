@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import json
 import tempfile
 import re
@@ -93,6 +94,71 @@ class TelegramHandlersTests(unittest.IsolatedAsyncioTestCase):
             (4242, "Faltam 5 para o onibus!"),
             (4242, "Está no horário do ônibus!"),
         ])
+
+    async def test_notificar_substitui_com_confirmacao_e_revalida_atalho_expirado(self) -> None:
+        agora = datetime(2026, 11, 13, 11, 43, tzinfo=BRT)
+        alertas = Alertas()
+        self.context.bot_data.update(clock=lambda: agora, alertas=alertas)
+        self.context.bot = SimpleNamespace(username="MeuBot")
+        self.context.job_queue = SimpleNamespace(
+            run_once=lambda *args, **kwargs: SimpleNamespace(schedule_removal=lambda: None)
+        )
+        usuario = SimpleNamespace(id=42)
+        outro = SimpleNamespace(id=43)
+        chat = SimpleNamespace(id=4242, type="private")
+
+        def botao(resposta, rotulo):
+            markup = resposta.call_args.kwargs["reply_markup"]
+            return next(b.callback_data for row in markup.inline_keyboard for b in row if b.text == rotulo)
+
+        async def clicar(data, titular=usuario, destino=chat):
+            query = SimpleNamespace(data=data, answer=AsyncMock(), edit_message_text=AsyncMock())
+            await ponto_callback(SimpleNamespace(
+                callback_query=query, effective_user=titular, effective_chat=destino
+            ), self.context)
+            return query
+
+        async def escolher(ponto, horario):
+            selecao = await self._clique(f"p:11:1:{ponto}")
+            notificar = await clicar(botao(selecao.edit_message_text, "Notificar"), destino=None)
+            self.context.args = [notificar.answer.call_args.kwargs["url"].split("?start=")[1]]
+            mensagem = SimpleNamespace(reply_text=AsyncMock())
+            await start(SimpleNamespace(
+                effective_message=mensagem, effective_chat=chat, effective_user=usuario
+            ), self.context)
+            return await clicar(botao(mensagem.reply_text, horario))
+
+        primeira = await escolher(1, "12:00")
+        atalho = botao(primeira.edit_message_text, "10 min")
+        agora = datetime(2026, 11, 13, 11, 53, tzinfo=BRT)
+        atualizada = await clicar(atalho)
+        self.assertIn("em cima da hora", atualizada.edit_message_text.call_args.args[0])
+        self.assertNotIn(usuario.id, alertas.ativos)
+        final = await clicar(botao(atualizada.edit_message_text, "Só no horário da saída"))
+        self.assertIn("um aviso no horário da saída", final.edit_message_text.call_args.args[0])
+        original = alertas.ativos[usuario.id]
+        self.assertEqual(original.antecedencia, 0)
+        self.assertEqual(len(original.jobs), 1)
+
+        segunda = await escolher(2, "12:30")
+        escolha = botao(segunda.edit_message_text, "30 min")
+        negado = await clicar(escolha, titular=outro)
+        self.assertTrue(negado.answer.call_args.kwargs["show_alert"])
+        solicitacao = await clicar(escolha)
+        substituir = botao(solicitacao.edit_message_text, "Substituir alerta")
+        self.assertIs(alertas.ativos[usuario.id], original)
+        negado = await clicar(substituir, titular=outro)
+        self.assertTrue(negado.answer.call_args.kwargs["show_alert"])
+        resposta_a, resposta_b = await asyncio.gather(clicar(substituir), clicar(substituir))
+        confirmadas = [
+            resposta for resposta in (resposta_a, resposta_b)
+            if resposta.edit_message_text.called
+            and "Alertas ativados" in resposta.edit_message_text.call_args.args[0]
+        ]
+        self.assertEqual(len(confirmadas), 1)
+        self.assertEqual(alertas.ativos[usuario.id].viagem.saida.hour, 12)
+        self.assertEqual(alertas.ativos[usuario.id].viagem.saida.minute, 30)
+        self.assertNotIn(outro.id, alertas.ativos)
 
     def _assert_buscar_outra_linha(self, markup) -> None:
         botoes = [botao for linha in markup.inline_keyboard for botao in linha]
