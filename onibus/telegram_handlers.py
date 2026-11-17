@@ -22,7 +22,7 @@ _HORARIOS_RE = re.compile(r"h:([0-9]{1,10}):([0-9]{1,10}):([1-5]):([0-9]{8}):([0
 _VOLTAR_RE = re.compile(r"b:([0-9]{1,10}):([0-9]{1,10})")
 _CALENDARIOS = {"uteis": "Dias úteis", "sabados": "Sábados", "domingos_feriados": "Domingos e feriados"}
 _HORARIOS_POR_PAGINA = 28
-_ALERTA_RE = re.compile(r"(an|av|aa|as):([A-Za-z0-9_-]{22})(?::([0-9]{1,2}))?")
+_ALERTA_RE = re.compile(r"(an|av|aa|as|ab):([A-Za-z0-9_-]{22})(?::([0-9]{1,2}))?")
 _ALERTA_EXPIRADO = "Esta seleção expirou. Busque a linha novamente."
 
 
@@ -99,13 +99,18 @@ async def _iniciar_alerta(update: Update, context: ContextTypes.DEFAULT_TYPE, to
     if not viagens:
         await update.effective_message.reply_text(_ALERTA_EXPIRADO)
         return
+    texto, teclado = _menu_viagens(alertas, viagens, _agora(context), usuario.id)
+    await update.effective_message.reply_text(texto, reply_markup=teclado)
+
+
+def _menu_viagens(
+    alertas: Alertas, viagens: list[Viagem], agora: datetime, usuario_id: int
+) -> tuple[str, InlineKeyboardMarkup]:
     botoes = [
-        [InlineKeyboardButton(f"{viagem.saida:%H:%M}", callback_data=f"av:{alertas.guardar(_agora(context), usuario.id, viagem)}")]
+        [InlineKeyboardButton(f"{viagem.saida:%H:%M}", callback_data=f"av:{alertas.guardar(agora, usuario_id, viagem)}")]
         for viagem in viagens
     ]
-    await update.effective_message.reply_text(
-        f"{viagens[0].linha}\nEscolha o horário da saída:", reply_markup=InlineKeyboardMarkup(botoes)
-    )
+    return f"{viagens[0].linha}\nEscolha o horário da saída:", InlineKeyboardMarkup(botoes)
 
 
 async def _mostrar_antecedencias(query, token: str, viagem: Viagem, agora: datetime) -> None:
@@ -117,7 +122,8 @@ async def _mostrar_antecedencias(query, token: str, viagem: Viagem, agora: datet
     botoes = [InlineKeyboardButton(
         f"{minutos} min" if minutos else "Só no horário da saída", callback_data=f"aa:{token}:{minutos}"
     ) for minutos in opcoes]
-    await query.edit_message_text(texto, reply_markup=InlineKeyboardMarkup([botoes]))
+    voltar = InlineKeyboardButton("Voltar", callback_data=f"ab:{token}")
+    await query.edit_message_text(texto, reply_markup=InlineKeyboardMarkup([botoes, [voltar]]))
 
 
 async def alerta_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -142,7 +148,7 @@ async def alerta_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
     anterior = None
     if acao == "as" and isinstance(dados, tuple) and valor is None:
         viagem, minutos, anterior = dados
-    elif isinstance(dados, Viagem) and ((acao == "av" and valor is None) or (acao == "aa" and valor is not None)):
+    elif isinstance(dados, Viagem) and ((acao in ("av", "ab") and valor is None) or (acao == "aa" and valor is not None)):
         viagem, minutos = dados, int(valor) if valor is not None else None
     else:
         await query.answer(_ALERTA_EXPIRADO, show_alert=True)
@@ -151,11 +157,16 @@ async def alerta_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
         await query.answer(_ALERTA_EXPIRADO, show_alert=True)
         return
     await query.answer()
-    if viagem not in await _viagens(context, viagem.consulta, chat.id):
-        await query.edit_message_text(_ALERTA_EXPIRADO)
-        return
+    viagens = await _viagens(context, viagem.consulta, chat.id)
     agora = _agora(context)
     if alertas.obter(token, agora, usuario.id) is not dados:
+        return
+    if acao == "ab" and viagens:
+        texto, teclado = _menu_viagens(alertas, viagens, agora, usuario.id)
+        await query.edit_message_text(texto, reply_markup=teclado)
+        return
+    if viagem not in viagens:
+        await query.edit_message_text(_ALERTA_EXPIRADO)
         return
     opcoes = opcoes_antecedencia(viagem.saida, agora)
     if minutos not in opcoes:
@@ -373,7 +384,7 @@ async def ponto_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     if query is None:
         return
     data = query.data if isinstance(query.data, str) else ""
-    if data.startswith(("an:", "av:", "aa:", "as:")):
+    if data.startswith(("an:", "av:", "aa:", "as:", "ab:")):
         await alerta_callback(update, context)
         return
     match = _CALLBACK_RE.fullmatch(data)

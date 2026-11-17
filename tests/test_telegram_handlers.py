@@ -134,6 +134,9 @@ class TelegramHandlersTests(unittest.IsolatedAsyncioTestCase):
         atualizada = await clicar(atalho)
         self.assertIn("em cima da hora", atualizada.edit_message_text.call_args.args[0])
         self.assertNotIn(usuario.id, alertas.ativos)
+        retorno = await clicar(botao(atualizada.edit_message_text, "Voltar"))
+        self.assertIn("Escolha o horário da saída", retorno.edit_message_text.call_args.args[0])
+        atualizada = await clicar(botao(retorno.edit_message_text, "12:00"))
         final = await clicar(botao(atualizada.edit_message_text, "Só no horário da saída"))
         self.assertIn("um aviso no horário da saída", final.edit_message_text.call_args.args[0])
         original = alertas.ativos[usuario.id]

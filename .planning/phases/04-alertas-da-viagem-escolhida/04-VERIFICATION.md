@@ -12,7 +12,7 @@ covered_files:
   - onibus/telegram_handlers.py
   - tests/test_alertas.py
   - tests/test_telegram_handlers.py
-covered_digest: "v4:sha256:29baaf19e9138e1d9fe9144e18ab4ab0553d4cde103378abf6d55d6c6e1a3dd0"
+covered_digest: "v4:sha256:ae69b2e7a49104629bae3b780fb437ef5b868fbdde624d5845d2e2cadacc621b"
 re_verification:
   previous_status: human_needed
   previous_score: 4/6
@@ -55,4 +55,4 @@ human_verification:
 - `.venv/Scripts/python.exe -m unittest discover -s tests -p test_alertas.py -v` — 3 aprovados.
 - `.venv/Scripts/python.exe -m unittest discover -s tests -p test_telegram_handlers.py -k notific -v` — 2 aprovados.
 
-O aceite em conversa real segue pendente. A persistência após reinício e o cancelamento avulso continuam no escopo da Fase 5.
+O usuário confirmou a entrega no privado com o atalho de 10 minutos. Ao testar uma saída próxima, apontou a falta de Voltar. O retorno à escolha de horário foi adicionado e a suíte de 74 testes passou. O aceite do retorno, do aviso final avulso e da substituição segue pendente.
