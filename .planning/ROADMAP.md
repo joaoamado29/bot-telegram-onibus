@@ -11,7 +11,7 @@ Este roadmap foi aprovado pelo usuário; nenhum plano de implementação foi exe
 - [x] **Phase 1: Primeiras consultas no Telegram** - Escolher linha e ponto e consultar próximas saídas usando horários coletados e persistidos.
 - [ ] **Phase 2: Calendário local e consulta completa** - Consultar o calendário correto em feriados, ver todos os horários e voltar entre os pontos.
 - [ ] **Phase 3: Consulta do dia seguinte** - Receber aviso de fim das saídas e consultar amanhã separadamente.
-- [ ] **Phase 4: Alertas da viagem escolhida** - Escolher uma saída, informar antecedência e receber contagens e aviso final.
+- [x] **Phase 4: Alertas da viagem escolhida** - Escolher uma saída, informar antecedência e receber contagens e aviso final. (completed 2026-11-17)
 - [ ] **Phase 5: Continuidade e cancelamento dos alertas** - Manter alertas futuros após reinício e cancelar acompanhamentos pelo Telegram.
 - [ ] **Phase 6: Melhorar clareza das respostas do bot**
 
@@ -85,7 +85,7 @@ A fonte verificável e a manutenção dos feriados serão definidas no planejame
 4. Às 12h, o usuário recebe `Está no horário do ônibus!`; nenhuma nova contagem é enviada para a viagem encerrada.
 5. Dois usuários escolhem linhas, pontos e saídas diferentes sem alterar as escolhas nem os alertas um do outro; navegar após agendar não muda a viagem acompanhada.
 6. Cada passageiro acompanha uma viagem por vez e pode confirmar a substituição do alerta ativo.
-**Plans:** 1/1 plans executed
+**Plans:** 1/1 plans complete
 - [x] 04-01-PLAN.md — Configurar, entregar e substituir alertas no Telegram
 **UI hint:** yes
 
@@ -112,7 +112,7 @@ Esta fase verifica o fluxo com o processo em funcionamento. A recuperação apó
 | 1. Primeiras consultas no Telegram | 0/4 | Planned     | - |
 | 2. Calendário local e consulta completa | 3/3 | In Progress | - |
 | 3. Consulta do dia seguinte | 1/1 | Aceite aprovado, encerramento formal pendente | - |
-| 4. Alertas da viagem escolhida | 1/1 | Aguardando aceite no Telegram | - |
+| 4. Alertas da viagem escolhida | 1/1 | Complete    | 2026-11-17 |
 | 5. Continuidade e cancelamento dos alertas | 0/TBD | Not started | - |
 | 6. Melhorar clareza das respostas do bot | 0/TBD | Not started | - |
 

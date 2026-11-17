@@ -2,18 +2,18 @@
 gsd_state_version: "1.0"
 current_phase: 4
 current_phase_name: Alertas da viagem escolhida
-status: verifying
-stopped_at: Plano 04-01 executado, aguardando aceite dos alertas no Telegram.
-last_updated: "2026-11-16T20:11:12.469Z"
-last_activity: 2026-11-16
-last_activity_desc: Plano 04-01 executado e 74 testes aprovados.
-state_head: 51c9a30d8dbdd007226ada2d82d45b1f08c20388
+status: complete
+stopped_at: Fase 4 encerrada. Fase 5 não iniciada.
+last_updated: "2026-11-17T17:57:04.229Z"
+last_activity: 2026-11-17
+last_activity_desc: Fase 4 encerrada após aprovação dos três testes no Telegram.
+state_head: cb239a753871c0dcd20be93ae082d5bd245ae5ed
 progress:
   total_phases: 6
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 9
   completed_plans: 9
-  percent: 17
+  percent: 33
 ---
 
 # Project State
@@ -23,16 +23,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-11-13)
 
 **Core value:** Permitir consultar os próximos horários do ponto escolhido e receber avisos antes da saída, conforme Brasília e o calendário de operação.
-**Current focus:** Fase 4 — aceite dos alertas de viagem no Telegram.
+**Current focus:** Fase 4 encerrada. Fase 5 não iniciada.
 
 ## Current Position
 
-Phase: 4 (Alertas da viagem escolhida)
+Phase: 4 — Alertas da viagem escolhida
 Plan: 1 de 1 concluído
-Status: Verificação técnica aprovada, aguardando aceite no Telegram.
-Last activity: 2026-11-16 — Plano 04-01 executado e 74 testes aprovados.
+Status: Fase encerrada após aceite no Telegram.
+Last activity: 2026-11-17 — Encerramento da Fase 4.
 
-Progress: [██░░░░░░░░] 17%
+Progress: [███░░░░░░░] 33%
 
 ## Performance Metrics
 
@@ -46,6 +46,7 @@ Progress: [██░░░░░░░░] 17%
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 01-primeiras-consultas-no-telegram | 4 | 1.9h | 29m |
+| 4 | 1 | - | - |
 
 **Recent Trend:**
 - Last 5 plans: Nenhum
@@ -85,8 +86,8 @@ Nenhum item adicional capturado.
 
 ## Session Continuity
 
-Last session: 2026-11-16T19:57:35.843Z
-Stopped at: Plano 04-01 executado, aguardando aceite dos alertas no Telegram.
+Last session: 2026-11-17
+Stopped at: Fase 4 encerrada. Fase 5 não iniciada.
 Resume file: .planning/phases/04-alertas-da-viagem-escolhida/04-VERIFICATION.md
 
-Next: Executar `$gsd-verify-work 4` para o aceite no Telegram. As Fases 2 e 3 têm aceite aprovado e fechamento formal pendente no roadmap.
+Next: Aguardar solicitação do usuário para iniciar a Fase 5. As Fases 2 e 3 continuam com fechamento formal pendente no roadmap.

@@ -26,18 +26,18 @@
 
 - [ ] **BOT-01**: O usuário pode iniciar com `/start` e escolher uma linha do catálogo.
 - [ ] **BOT-02**: Após escolher a linha, o usuário recebe e pode selecionar os endereços dos pontos daquela linha.
-- [ ] **BOT-03**: Após selecionar o endereço, o usuário recebe as próximas saídas de hoje e as opções Notificar, Ver horários e Voltar.
+- [x] **BOT-03**: Após selecionar o endereço, o usuário recebe as próximas saídas de hoje e as opções Notificar, Ver horários e Voltar.
 - [ ] **BOT-04**: O usuário pode usar Ver horários para consultar todos os horários do endereço escolhido no dia consultado.
 - [ ] **BOT-05**: O usuário pode voltar à escolha do endereço da linha selecionada.
 - [ ] **BOT-06**: Quando as saídas de hoje terminarem, o usuário recebe aviso e a opção Ver horários de amanhã.
-- [ ] **BOT-07**: As escolhas de linha, ponto e viagem de um usuário não alteram a navegação ou os alertas de outro usuário.
+- [x] **BOT-07**: As escolhas de linha, ponto e viagem de um usuário não alteram a navegação ou os alertas de outro usuário.
 
 ### Alertas
 
-- [ ] **ALERT-01**: O usuário pode escolher uma saída apresentada e ativar um alerta para aquela viagem. Se já houver alerta ativo, pode confirmar sua substituição.
-- [ ] **ALERT-02**: O usuário recebe o primeiro alerta na antecedência escolhida e os seguintes a cada cinco minutos enquanto a saída for futura, no formato `Faltam {minutos_faltantes} para o onibus!`.
-- [ ] **ALERT-03**: O bot apresenta os atalhos de 10, 15, 20 e 30 minutos cujo primeiro aviso ainda cabe. Se nenhum couber e a saída for futura, informa que está em cima da hora e oferece somente o aviso no horário da saída.
-- [ ] **ALERT-04**: No horário da saída, o usuário recebe `Está no horário do ônibus!` e os alertas daquela viagem são encerrados.
+- [x] **ALERT-01**: O usuário pode escolher uma saída apresentada e ativar um alerta para aquela viagem. Se já houver alerta ativo, pode confirmar sua substituição.
+- [x] **ALERT-02**: O usuário recebe o primeiro alerta na antecedência escolhida e os seguintes a cada cinco minutos enquanto a saída for futura, no formato `Faltam {minutos_faltantes} para o onibus!`.
+- [x] **ALERT-03**: O bot apresenta os atalhos de 10, 15, 20 e 30 minutos cujo primeiro aviso ainda cabe. Se nenhum couber e a saída for futura, informa que está em cima da hora e oferece somente o aviso no horário da saída.
+- [x] **ALERT-04**: No horário da saída, o usuário recebe `Está no horário do ônibus!` e os alertas daquela viagem são encerrados.
 - [ ] **ALERT-05**: Após reinício do bot, alertas futuros persistidos são recuperados e avisos cujo horário passou são ignorados.
 - [ ] **ALERT-06**: O usuário pode cancelar o acompanhamento de uma viagem por um botão, impedindo os próximos avisos desse alerta.
 
@@ -72,15 +72,15 @@ Nenhum requisito adicional comprometido. Favoritos, recorrência diária e outra
 | TIME-05 | Phase 3 | Pending |
 | BOT-01 | Phase 1 | Pending |
 | BOT-02 | Phase 1 | Pending |
-| BOT-03 | Phase 4 | Pending |
+| BOT-03 | Phase 4 | Complete |
 | BOT-04 | Phase 2 | Pending |
 | BOT-05 | Phase 2 | Pending |
 | BOT-06 | Phase 3 | Pending |
-| BOT-07 | Phase 4 | Pending |
-| ALERT-01 | Phase 4 | Pending |
-| ALERT-02 | Phase 4 | Pending |
-| ALERT-03 | Phase 4 | Pending |
-| ALERT-04 | Phase 4 | Pending |
+| BOT-07 | Phase 4 | Complete |
+| ALERT-01 | Phase 4 | Complete |
+| ALERT-02 | Phase 4 | Complete |
+| ALERT-03 | Phase 4 | Complete |
+| ALERT-04 | Phase 4 | Complete |
 | ALERT-05 | Phase 5 | Pending |
 | ALERT-06 | Phase 5 | Pending |
 

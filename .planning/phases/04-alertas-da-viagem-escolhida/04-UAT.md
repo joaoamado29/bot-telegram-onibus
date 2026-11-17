@@ -1,5 +1,5 @@
 ---
-status: testing
+status: complete
 phase: 04-alertas-da-viagem-escolhida
 source: [04-01-SUMMARY.md, 04-VERIFICATION.md]
 started: 2026-11-16
@@ -8,12 +8,7 @@ updated: 2026-11-17
 
 ## Current Test
 
-number: 2
-name: Aviso no horário da saída
-expected: |
-  Com menos de 10 minutos, Voltar reabre a escolha de horário.
-  Só no horário da saída agenda apenas a mensagem final no privado.
-awaiting: user response
+Nenhum. Os três testes foram aprovados.
 
 ## Tests
 
@@ -23,19 +18,19 @@ result: pass
 
 ### 2. Aviso no horário da saída
 expected: Com menos de 10 minutos e uma saída futura, o bot avisa que está em cima da hora, permite voltar à escolha de horário ou receber apenas o aviso final.
-result: pending
-note: O usuário apontou a ausência de Voltar. O botão foi adicionado e está pendente de conferência no Telegram.
+result: pass
+note: Após a correção, o usuário aprovou Voltar e o aviso único no horário da saída.
 
 ### 3. Substituir alerta
 expected: Com um alerta ativo, o bot oferece Substituir alerta. A sequência da nova viagem passa a valer após a confirmação.
-result: pending
+result: pass
 
 ## Summary
 
 total: 3
-passed: 1
+passed: 3
 issues: 0
-pending: 2
+pending: 0
 skipped: 0
 blocked: 0
 

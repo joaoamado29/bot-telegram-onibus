@@ -1,7 +1,7 @@
 ---
 phase: 04-alertas-da-viagem-escolhida
 verified: 2026-11-16
-status: human_needed
+status: passed
 score: 6/6
 behavior_unverified: 0
 overrides_applied: 0
@@ -55,4 +55,4 @@ human_verification:
 - `.venv/Scripts/python.exe -m unittest discover -s tests -p test_alertas.py -v` — 3 aprovados.
 - `.venv/Scripts/python.exe -m unittest discover -s tests -p test_telegram_handlers.py -k notific -v` — 2 aprovados.
 
-O usuário confirmou a entrega no privado com o atalho de 10 minutos. Ao testar uma saída próxima, apontou a falta de Voltar. O retorno à escolha de horário foi adicionado e a suíte de 74 testes passou. O aceite do retorno, do aviso final avulso e da substituição segue pendente.
+O usuário confirmou no Telegram a entrega no privado com o atalho de 10 minutos, o retorno à escolha de horário após a correção de Voltar, o aviso final avulso e a substituição. A suíte de 74 testes passou após a correção.

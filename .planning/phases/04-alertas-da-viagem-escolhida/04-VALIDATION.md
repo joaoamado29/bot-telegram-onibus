@@ -35,4 +35,4 @@ Execute o comando rápido após o tracer e a suíte completa após cada expansã
 ## Conclusão
 
 - [x] Registrar evidência dos testes por tarefa. A suíte de handlers passou com 23 testes e a suíte completa com 74 testes após `a555b74`.
-- [ ] Confirmar o aceite no aplicativo.
+- [x] Confirmar o aceite no aplicativo. Os três testes foram aprovados no Telegram.
