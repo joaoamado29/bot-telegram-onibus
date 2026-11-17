@@ -9,6 +9,9 @@ from pathlib import Path
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, InlineQueryResultArticle, InputTextMessageContent, Update
 from telegram.error import BadRequest
 from telegram.ext import Application, CallbackQueryHandler, CommandHandler, ContextTypes, InlineQueryHandler
+from telegram.helpers import create_deep_linked_url
+
+from onibus.alertas import Alertas, ConsultaAlerta, Viagem, opcoes_antecedencia
 
 from onibus.core import BRT, ConsultaSaidas, carregar_pontos, conectar, proximas_saidas
 from onibus.search import buscar_sugestoes
@@ -19,6 +22,8 @@ _HORARIOS_RE = re.compile(r"h:([0-9]{1,10}):([0-9]{1,10}):([1-5]):([0-9]{8}):([0
 _VOLTAR_RE = re.compile(r"b:([0-9]{1,10}):([0-9]{1,10})")
 _CALENDARIOS = {"uteis": "Dias úteis", "sabados": "Sábados", "domingos_feriados": "Domingos e feriados"}
 _HORARIOS_POR_PAGINA = 28
+_ALERTA_RE = re.compile(r"(an|av|aa|as):([A-Za-z0-9_-]{22})(?::([0-9]{1,2}))?")
+_ALERTA_EXPIRADO = "Esta seleção expirou. Busque a linha novamente."
 
 
 def build_application(token: str, db_path: str | Path) -> Application:
@@ -29,6 +34,7 @@ def build_application(token: str, db_path: str | Path) -> Application:
     """
     application = Application.builder().token(token).build()
     application.bot_data["db_path"] = str(db_path)
+    application.bot_data["alertas"] = Alertas()
     application.add_handler(CommandHandler("start", start))
     application.add_handler(InlineQueryHandler(inline_query))
     application.add_handler(CallbackQueryHandler(ponto_callback))
@@ -42,6 +48,10 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     sem obrigar o passageiro a digitar comandos complexos.
     """
     if update.effective_message:
+        args = getattr(context, "args", None)
+        if args and args[0].startswith("alerta_"):
+            await _iniciar_alerta(update, context, args[0][7:])
+            return
         await update.effective_message.reply_text(
             "Escolha uma linha pelo número ou nome:",
             reply_markup=InlineKeyboardMarkup(
@@ -52,6 +62,130 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
 def _botao_buscar_outra_linha() -> InlineKeyboardButton:
     return InlineKeyboardButton("Buscar outra linha", switch_inline_query_current_chat="")
+
+
+def _agora(context: ContextTypes.DEFAULT_TYPE) -> datetime:
+    return context.bot_data.get("clock", lambda: datetime.now(BRT))()
+
+
+def _saida(consulta: ConsultaAlerta, horario: str) -> datetime:
+    return datetime.combine(consulta.dia, time.fromisoformat(horario), tzinfo=BRT)
+
+
+async def _viagens(
+    context: ContextTypes.DEFAULT_TYPE, consulta: ConsultaAlerta, chat_id: int
+) -> list[Viagem]:
+    dados = await asyncio.to_thread(
+        _consultar, context.bot_data["db_path"], consulta.numero, consulta.revisao,
+        consulta.ponto, datetime.combine(consulta.dia, time.min, tzinfo=BRT),
+    )
+    if dados is None:
+        return []
+    agora = _agora(context)
+    return [
+        Viagem(consulta, f"{dados.numero:03d} - {dados.nome}", saida, chat_id)
+        for horario in consulta.horarios
+        if horario in dados.todos_horarios and (saida := _saida(consulta, horario)) > agora
+    ]
+
+
+async def _iniciar_alerta(update: Update, context: ContextTypes.DEFAULT_TYPE, token: str) -> None:
+    chat, usuario = update.effective_chat, update.effective_user
+    if chat is None or chat.type != "private" or usuario is None:
+        return
+    alertas = context.bot_data["alertas"]
+    consulta = alertas.obter(token, _agora(context), usuario.id)
+    viagens = await _viagens(context, consulta, chat.id) if isinstance(consulta, ConsultaAlerta) else []
+    if not viagens:
+        await update.effective_message.reply_text(_ALERTA_EXPIRADO)
+        return
+    botoes = [
+        [InlineKeyboardButton(f"{viagem.saida:%H:%M}", callback_data=f"av:{alertas.guardar(_agora(context), usuario.id, viagem)}")]
+        for viagem in viagens
+    ]
+    await update.effective_message.reply_text(
+        f"{viagens[0].linha}\nEscolha o horário da saída:", reply_markup=InlineKeyboardMarkup(botoes)
+    )
+
+
+async def _mostrar_antecedencias(query, token: str, viagem: Viagem, agora: datetime) -> None:
+    opcoes = opcoes_antecedencia(viagem.saida, agora)
+    if not opcoes:
+        await query.edit_message_text(_ALERTA_EXPIRADO)
+        return
+    texto = "Está em cima da hora. Posso avisar no horário da saída." if opcoes == (0,) else "Quando você quer receber o primeiro aviso?"
+    botoes = [InlineKeyboardButton(
+        f"{minutos} min" if minutos else "Só no horário da saída", callback_data=f"aa:{token}:{minutos}"
+    ) for minutos in opcoes]
+    await query.edit_message_text(texto, reply_markup=InlineKeyboardMarkup([botoes]))
+
+
+async def alerta_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    query = update.callback_query
+    match = _ALERTA_RE.fullmatch(query.data or "")
+    usuario = update.effective_user
+    if match is None or usuario is None:
+        await query.answer(_ALERTA_EXPIRADO, show_alert=True)
+        return
+    acao, token, valor = match.groups()
+    alertas = context.bot_data["alertas"]
+    agora = _agora(context)
+    dados = alertas.obter(token, agora, None if acao == "an" else usuario.id)
+    if acao == "an" and isinstance(dados, ConsultaAlerta) and valor is None:
+        intencao = alertas.guardar(agora, usuario.id, dados)
+        await query.answer(url=create_deep_linked_url(context.bot.username, f"alerta_{intencao}"))
+        return
+    chat = update.effective_chat
+    if chat is None or chat.type != "private":
+        await query.answer(_ALERTA_EXPIRADO, show_alert=True)
+        return
+    anterior = None
+    if acao == "as" and isinstance(dados, tuple) and valor is None:
+        viagem, minutos, anterior = dados
+    elif isinstance(dados, Viagem) and ((acao == "av" and valor is None) or (acao == "aa" and valor is not None)):
+        viagem, minutos = dados, int(valor) if valor is not None else None
+    else:
+        await query.answer(_ALERTA_EXPIRADO, show_alert=True)
+        return
+    if viagem.chat_id != chat.id:
+        await query.answer(_ALERTA_EXPIRADO, show_alert=True)
+        return
+    await query.answer()
+    if viagem not in await _viagens(context, viagem.consulta, chat.id):
+        await query.edit_message_text(_ALERTA_EXPIRADO)
+        return
+    agora = _agora(context)
+    if alertas.obter(token, agora, usuario.id) is not dados:
+        return
+    opcoes = opcoes_antecedencia(viagem.saida, agora)
+    if minutos not in opcoes:
+        token_viagem = alertas.guardar(agora, usuario.id, viagem) if acao == "as" else token
+        if acao == "as":
+            alertas.etapas.pop(token, None)
+        await _mostrar_antecedencias(query, token_viagem, viagem, agora)
+        return
+    ativo = alertas.ativo(usuario.id, agora)
+    if acao == "aa" and ativo:
+        consulta_atual = ativo.viagem.consulta
+        if (
+            ativo.viagem.saida == viagem.saida
+            and consulta_atual.numero == viagem.consulta.numero
+            and consulta_atual.ponto == viagem.consulta.ponto
+        ):
+            await query.edit_message_text("Você já tem um alerta ativo para esta viagem.")
+            return
+        troca = alertas.guardar(agora, usuario.id, (viagem, minutos, ativo.identidade))
+        await query.edit_message_text(
+            "Você já tem um alerta ativo. Quer acompanhar esta viagem?",
+            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("Substituir alerta", callback_data=f"as:{troca}")]]),
+        )
+        return
+    if not alertas.agendar(context.job_queue, usuario.id, viagem, minutos, anterior):
+        await query.edit_message_text("Não foi possível ativar o alerta. Consulte a linha novamente.")
+        return
+    alertas.etapas.pop(token, None)
+    aviso = "Você receberá avisos antes da saída." if minutos else "Você receberá um aviso no horário da saída."
+    await query.edit_message_text(f"🔔 Alertas ativados para a linha {viagem.linha}.\n{aviso}")
 
 
 def criar_artigo(linha, pontos) -> InlineQueryResultArticle:
@@ -135,9 +269,12 @@ def formato_saidas(consulta: ConsultaSaidas, amanha: ConsultaSaidas | None = Non
 
 
 def _teclado_consulta(
-    numero: int, revisao: int, posicao: int, consulta: ConsultaSaidas, amanha: ConsultaSaidas | None = None
+    numero: int, revisao: int, posicao: int, consulta: ConsultaSaidas, amanha: ConsultaSaidas | None = None,
+    token_alerta: str | None = None,
 ) -> InlineKeyboardMarkup:
     teclado = []
+    if token_alerta:
+        teclado.append([InlineKeyboardButton("Notificar", callback_data=f"an:{token_alerta}")])
     if amanha:
         teclado.append([InlineKeyboardButton(
             "Ver horários de amanhã", callback_data=f"h:{numero}:{revisao}:{posicao}:{amanha.data:%Y%m%d}:0"
@@ -236,6 +373,9 @@ async def ponto_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     if query is None:
         return
     data = query.data if isinstance(query.data, str) else ""
+    if data.startswith(("an:", "av:", "aa:", "as:")):
+        await alerta_callback(update, context)
+        return
     match = _CALLBACK_RE.fullmatch(data)
     horarios_match = _HORARIOS_RE.fullmatch(data)
     voltar_match = _VOLTAR_RE.fullmatch(data)
@@ -243,7 +383,7 @@ async def ponto_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
         await query.answer("Seleção inválida. Busque a linha novamente.", show_alert=True)
         return
 
-    agora = context.bot_data.get("clock", lambda: datetime.now(BRT))()
+    agora = _agora(context)
     teclado = None
     if voltar_match:
         resultado = await asyncio.to_thread(_voltar, context.bot_data["db_path"], *map(int, voltar_match.groups()))
@@ -267,7 +407,12 @@ async def ponto_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
             )
         texto = formato_saidas(consulta, amanha) if consulta else "Esta seleção expirou porque os dados foram atualizados. Busque a linha novamente."
         if consulta:
-            teclado = _teclado_consulta(numero, revisao, posicao, consulta, amanha)
+            token_alerta = None
+            alertas = context.bot_data.get("alertas")
+            if not horarios_match and alertas is not None and consulta.status == "disponivel" and consulta.horarios:
+                snapshot = ConsultaAlerta(numero, revisao, posicao, consulta.data, tuple(consulta.horarios))
+                token_alerta = alertas.guardar(agora, None, snapshot)
+            teclado = _teclado_consulta(numero, revisao, posicao, consulta, amanha, token_alerta)
             if horarios_match:
                 try:
                     paginas = _paginas_horarios(consulta)

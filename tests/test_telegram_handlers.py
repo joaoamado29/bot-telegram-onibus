@@ -13,6 +13,7 @@ from zoneinfo import ZoneInfo
 
 from onibus.core import BRT, HorariosLinha, PontoHorario, conectar, publicar_linha, proximas_saidas
 from onibus.telegram_handlers import build_application, inline_query, ponto_callback, start, _consultar
+from onibus.alertas import Alertas
 
 
 class TelegramHandlersTests(unittest.IsolatedAsyncioTestCase):
@@ -48,6 +49,50 @@ class TelegramHandlersTests(unittest.IsolatedAsyncioTestCase):
         callback = SimpleNamespace(data=data, answer=AsyncMock(), edit_message_text=AsyncMock())
         await ponto_callback(SimpleNamespace(callback_query=callback), self.context)
         return callback
+
+    async def test_notificar_abre_privado_e_agenda_avisos(self) -> None:
+        agora = datetime(2026, 11, 13, 11, 43, tzinfo=BRT)
+        self.context.bot_data.update(clock=lambda: agora, alertas=Alertas())
+        self.context.bot = SimpleNamespace(username="MeuBot", send_message=AsyncMock())
+        jobs = []
+
+        def agendar(callback, **kwargs):
+            jobs.append((callback, kwargs))
+            return SimpleNamespace(schedule_removal=lambda: None)
+
+        self.context.job_queue = SimpleNamespace(run_once=agendar)
+        usuario = SimpleNamespace(id=42)
+        chat = SimpleNamespace(id=4242, type="private")
+        selecao = await self._clique("p:11:1:1")
+
+        def botao(resposta, rotulo):
+            markup = resposta.call_args.kwargs["reply_markup"]
+            return next(b.callback_data for row in markup.inline_keyboard for b in row if b.text == rotulo)
+
+        async def clicar(data, destino):
+            query = SimpleNamespace(data=data, answer=AsyncMock(), edit_message_text=AsyncMock())
+            await ponto_callback(SimpleNamespace(
+                callback_query=query, effective_user=usuario, effective_chat=destino
+            ), self.context)
+            return query
+
+        notificar = await clicar(botao(selecao.edit_message_text, "Notificar"), None)
+        self.context.args = [notificar.answer.call_args.kwargs["url"].split("?start=")[1]]
+        mensagem = SimpleNamespace(reply_text=AsyncMock())
+        await start(SimpleNamespace(effective_message=mensagem, effective_chat=chat, effective_user=usuario), self.context)
+        saida = await clicar(botao(mensagem.reply_text, "12:00"), chat)
+        confirmacao = await clicar(botao(saida.edit_message_text, "10 min"), chat)
+        self.assertIn("Alertas ativados para a linha 011 - Circular Centro.", confirmacao.edit_message_text.call_args.args[0])
+        self.assertEqual([kwargs["when"].strftime("%H:%M") for _, kwargs in jobs], ["11:50", "11:55", "12:00"])
+        for callback, kwargs in jobs:
+            agora = kwargs["when"]
+            self.context.job = SimpleNamespace(data=kwargs["data"])
+            await callback(self.context)
+        self.assertEqual([call.args for call in self.context.bot.send_message.call_args_list], [
+            (4242, "Faltam 10 para o onibus!"),
+            (4242, "Faltam 5 para o onibus!"),
+            (4242, "Está no horário do ônibus!"),
+        ])
 
     def _assert_buscar_outra_linha(self, markup) -> None:
         botoes = [botao for linha in markup.inline_keyboard for botao in linha]
